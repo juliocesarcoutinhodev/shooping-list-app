@@ -255,17 +255,17 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({
         }).start(() => {
           // Chama dismiss após animação terminar
           onErrorDismiss();
-          // Reset opacity para próximo erro
-          errorOpacity.setValue(1);
         });
       }, 5000); // 5 segundos antes de começar a animação
 
-      return () => clearTimeout(timer);
-    } else if (!externalError) {
-      // Reset opacity quando erro é limpo
-      errorOpacity.setValue(1);
+      return () => {
+        clearTimeout(timer);
+        // Cancela animação em andamento se houver
+        errorOpacity.stopAnimation();
+      };
     }
-  }, [externalError, onErrorDismiss, errorOpacity]);
+    // Não resetamos opacity quando erro é limpo - será resetado quando novo erro aparecer
+  }, [externalError, onErrorDismiss]);
 
   const {
     control,
