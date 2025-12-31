@@ -236,18 +236,36 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({
 }) => {
   const theme = useAppTheme();
   const slideAnim = React.useRef(new Animated.Value(0)).current;
+  const errorOpacity = React.useRef(new Animated.Value(1)).current;
   const screenHeight = Dimensions.get('window').height;
 
-  // Auto-dismiss do erro após 5 segundos
+  // Auto-dismiss do erro após 5 segundos com animação suave
   useEffect(() => {
     if (externalError && onErrorDismiss) {
+      // Reset opacity quando um novo erro aparece
+      errorOpacity.setValue(1);
+
+      // Timer para iniciar fade out após 5 segundos
       const timer = setTimeout(() => {
-        onErrorDismiss();
-      }, 5000); // 5 segundos
+        // Animação de fade out suave
+        Animated.timing(errorOpacity, {
+          toValue: 0,
+          duration: 300, // 300ms para fade out suave
+          useNativeDriver: true,
+        }).start(() => {
+          // Chama dismiss após animação terminar
+          onErrorDismiss();
+          // Reset opacity para próximo erro
+          errorOpacity.setValue(1);
+        });
+      }, 5000); // 5 segundos antes de começar a animação
 
       return () => clearTimeout(timer);
+    } else if (!externalError) {
+      // Reset opacity quando erro é limpo
+      errorOpacity.setValue(1);
     }
-  }, [externalError, onErrorDismiss]);
+  }, [externalError, onErrorDismiss, errorOpacity]);
 
   const {
     control,
@@ -377,19 +395,20 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({
                 >
                 {/* Error Message */}
                 {externalError && (
-                  <View
+                  <Animated.View
                     style={[
                       styles.errorBanner,
                       {
                         // Mantém fundo vermelho sempre para dar destaque ao erro
                         backgroundColor: theme.colors.error,
+                        opacity: errorOpacity,
                       },
                     ]}
                   >
                     <Text style={[styles.errorText, { color: '#FFFFFF' }]}>
                       {externalError}
                     </Text>
-                  </View>
+                  </Animated.View>
                 )}
 
                 {/* Form */}
