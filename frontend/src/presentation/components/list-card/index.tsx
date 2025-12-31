@@ -90,7 +90,7 @@ export const ListCard: React.FC<ListCardProps> = ({
               {title}
             </Text>
             <Text style={[styles.itemCount, { color: theme.colors.textSecondary }]}>
-              {purchasedItemsCount} of {itemsCount} items
+              {purchasedItemsCount} de {itemsCount} items
             </Text>
           </View>
         </View>
