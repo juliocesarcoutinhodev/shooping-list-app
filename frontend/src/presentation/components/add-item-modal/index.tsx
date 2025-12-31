@@ -12,7 +12,9 @@ import { Controller, useForm } from 'react-hook-form';
 import {
   Animated,
   Dimensions,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -295,7 +297,7 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
                 },
               ]}
             >
-              {/* Header */}
+              {/* Header fixo - não scrolla */}
               <View style={styles.header}>
                 <Text style={[styles.title, { color: theme.colors.text }]}>Adicionar Item</Text>
                 <TouchableOpacity
@@ -307,87 +309,99 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
                 </TouchableOpacity>
               </View>
 
-              {/* ScrollView para permitir scroll quando o teclado aparece */}
-              <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
-                keyboardShouldPersistTaps='handled'
-                showsVerticalScrollIndicator={false}
-                bounces={false}
-                nestedScrollEnabled={true}
+              {/* KeyboardAvoidingView: ajusta o layout quando o teclado aparece
+                  - iOS: usa 'padding' para adicionar padding inferior
+                  - Android: usa 'height' para ajustar a altura do container */}
+              <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.keyboardAvoidingView}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
               >
-                {/* Error Message */}
-                {externalError && (
-                  <View style={[styles.errorBanner, { backgroundColor: theme.colors.error }]}>
-                    <Text style={[styles.errorText, { color: theme.colors.textInverted }]}>
-                      {externalError}
-                    </Text>
+                {/* ScrollView: permite rolagem quando o teclado cobre o conteúdo
+                    - keyboardShouldPersistTaps='handled': permite tocar em botões mesmo com teclado aberto
+                    - O ScrollView automaticamente scrolla para o campo focado no iOS */}
+                <ScrollView
+                  style={styles.scrollView}
+                  contentContainerStyle={styles.scrollContent}
+                  keyboardShouldPersistTaps='handled'
+                  showsVerticalScrollIndicator={false}
+                  bounces={false}
+                  nestedScrollEnabled={true}
+                  keyboardDismissMode='interactive'
+                >
+                  {/* Error Message */}
+                  {externalError && (
+                    <View style={[styles.errorBanner, { backgroundColor: theme.colors.error }]}>
+                      <Text style={[styles.errorText, { color: theme.colors.textInverted }]}>
+                        {externalError}
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* Form */}
+                  <View style={styles.form}>
+                    <Controller
+                      control={control}
+                      name='name'
+                      render={({ field: { onChange, onBlur, value } }) => (
+                        <TextField
+                          label='Nome do Item'
+                          placeholder='Ex: Arroz, Feijão, Leite...'
+                          value={value}
+                          onChangeText={onChange}
+                          onBlur={onBlur}
+                          error={errors.name?.message}
+                          autoCapitalize='sentences'
+                          returnKeyType='next'
+                          autoFocus
+                          disabled={loading}
+                          labelColor={theme.colors.text}
+                        />
+                      )}
+                    />
+
+                    <Controller
+                      control={control}
+                      name='quantity'
+                      render={({ field: { onChange, onBlur, value } }) => (
+                        <QuantityField
+                          value={value}
+                          onChange={onChange}
+                          onBlur={onBlur}
+                          error={errors.quantity?.message}
+                          loading={loading}
+                          labelColor={theme.colors.text}
+                        />
+                      )}
+                    />
+
+                    <Controller
+                      control={control}
+                      name='unitPrice'
+                      render={({ field: { onChange, onBlur, value } }) => (
+                        <PriceField
+                          value={value}
+                          onChange={onChange}
+                          onBlur={onBlur}
+                          error={errors.unitPrice?.message}
+                          loading={loading}
+                          labelColor={theme.colors.text}
+                        />
+                      )}
+                    />
                   </View>
-                )}
 
-                {/* Form */}
-                <View style={styles.form}>
-                  <Controller
-                    control={control}
-                    name='name'
-                    render={({ field: { onChange, onBlur, value } }) => (
-                      <TextField
-                        label='Nome do Item'
-                        placeholder='Ex: Arroz, Feijão, Leite...'
-                        value={value}
-                        onChangeText={onChange}
-                        onBlur={onBlur}
-                        error={errors.name?.message}
-                        autoCapitalize='sentences'
-                        returnKeyType='next'
-                        autoFocus
-                        disabled={loading}
-                        labelColor={theme.colors.text}
-                      />
-                    )}
+                  {/* Button */}
+                  <Button
+                    title='Adicionar Item'
+                    onPress={handleSubmit(handleFormSubmit)}
+                    loading={loading}
+                    disabled={loading}
+                    variant='primary'
+                    size='large'
                   />
-
-                  <Controller
-                    control={control}
-                    name='quantity'
-                    render={({ field: { onChange, onBlur, value } }) => (
-                      <QuantityField
-                        value={value}
-                        onChange={onChange}
-                        onBlur={onBlur}
-                        error={errors.quantity?.message}
-                        loading={loading}
-                        labelColor={theme.colors.text}
-                      />
-                    )}
-                  />
-
-                  <Controller
-                    control={control}
-                    name='unitPrice'
-                    render={({ field: { onChange, onBlur, value } }) => (
-                      <PriceField
-                        value={value}
-                        onChange={onChange}
-                        onBlur={onBlur}
-                        error={errors.unitPrice?.message}
-                        loading={loading}
-                        labelColor={theme.colors.text}
-                      />
-                    )}
-                  />
-                </View>
-
-                {/* Button */}
-                <Button
-                  title='Adicionar Item'
-                  onPress={handleSubmit(handleFormSubmit)}
-                  loading={loading}
-                  disabled={loading}
-                  variant='primary'
-                  size='large'
-                />
-              </ScrollView>
+                </ScrollView>
+              </KeyboardAvoidingView>
             </Animated.View>
           </TouchableWithoutFeedback>
         </View>
@@ -408,13 +422,26 @@ const styles = StyleSheet.create({
     width: '100%',
     maxHeight: '90%',
     paddingTop: 24,
+    // flex: 1 garante que o modal ocupe o espaço disponível
+    flex: 1,
+  } as ViewStyle,
+  keyboardAvoidingView: {
+    // flex: 1 permite que o KeyboardAvoidingView funcione corretamente
+    // dando espaço para ajustar quando o teclado aparece
+    flex: 1,
   } as ViewStyle,
   scrollView: {
-    maxHeight: 600, // Altura máxima para o scroll
+    // flex: 1 permite que o ScrollView ocupe todo o espaço disponível
+    // removendo maxHeight fixo para permitir ajuste dinâmico
+    flex: 1,
   } as ViewStyle,
   scrollContent: {
     paddingHorizontal: 24,
-    paddingBottom: 50, // Espaço extra para garantir que o botão seja visível
+    // paddingBottom aumentado para garantir espaço suficiente quando o teclado está aberto
+    // 100px é suficiente para a maioria dos teclados + botão
+    paddingBottom: 100,
+    // flexGrow permite que o conteúdo cresça se necessário, mas não força altura mínima
+    flexGrow: 1,
   } as ViewStyle,
   header: {
     flexDirection: 'row',

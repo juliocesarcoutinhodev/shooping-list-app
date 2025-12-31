@@ -93,7 +93,7 @@ export function Button({
 
     // No modo dark, textInverted pode ser escuro, então usamos branco diretamente para botões
     const textColor = variant === 'primary' ? '#FFFFFF' : '#059669';
-    
+
     if (disabled || loading) return { ...sizeStyles[size], color: '#FFFFFF' };
     return { ...sizeStyles[size], color: textColor };
   };
@@ -106,10 +106,7 @@ export function Button({
       activeOpacity={0.8}
     >
       {loading ? (
-        <ActivityIndicator
-          size='small'
-          color={variant === 'primary' ? '#FFFFFF' : '#059669'}
-        />
+        <ActivityIndicator size='small' color={variant === 'primary' ? '#FFFFFF' : '#059669'} />
       ) : (
         <Text style={[{ fontWeight: '600' }, getTextStyle()]}>{title}</Text>
       )}
@@ -138,7 +135,11 @@ export function TextField({
   const [isFocused, setIsFocused] = useState(false);
 
   // Extrai onFocus e onBlur dos props para combiná-los com os handlers internos
-  const { onFocus: externalOnFocus, onBlur: externalOnBlur, ...restTextInputProps } = textInputProps;
+  const {
+    onFocus: externalOnFocus,
+    onBlur: externalOnBlur,
+    ...restTextInputProps
+  } = textInputProps;
 
   const getContainerStyle = () => {
     const baseStyle = {
