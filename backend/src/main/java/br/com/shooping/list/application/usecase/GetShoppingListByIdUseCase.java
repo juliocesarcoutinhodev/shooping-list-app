@@ -1,0 +1,106 @@
+package br.com.shooping.list.application.usecase;
+
+import br.com.shooping.list.application.dto.shoppinglist.ItemResponse;
+import br.com.shooping.list.application.dto.shoppinglist.ShoppingListResponse;
+import br.com.shooping.list.domain.shoppinglist.ListItem;
+import br.com.shooping.list.domain.shoppinglist.ShoppingList;
+import br.com.shooping.list.domain.shoppinglist.ShoppingListRepository;
+import br.com.shooping.list.infrastructure.exception.ShoppingListNotFoundException;
+import br.com.shooping.list.infrastructure.exception.UnauthorizedShoppingListAccessException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * Caso de uso para buscar detalhes de uma lista de compras por ID.
+ *
+ * Responsabilidades:
+ * - Buscar lista por ID
+ * - Validar ownership (apenas dono pode ver)
+ * - Mapear para DTO de resposta incluindo todos os itens
+ * - Retornar resposta completa
+ */
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class GetShoppingListByIdUseCase {
+
+    private final ShoppingListRepository shoppingListRepository;
+
+    /**
+     * Busca uma lista de compras específica por ID com todos os itens.
+     *
+     * @param ownerId ID do usuário proprietário (extraído do JWT)
+     * @param listId ID da lista a ser buscada
+     * @return lista completa com todos os itens
+     * @throws ShoppingListNotFoundException se lista não existir
+     * @throws UnauthorizedShoppingListAccessException se usuário não for o dono
+     */
+    @Transactional(readOnly = true)
+    public ShoppingListResponse execute(Long ownerId, Long listId) {
+        log.info("Buscando lista de compras: listId={}, ownerId={}", listId, ownerId);
+
+        // Buscar lista
+        ShoppingList list = shoppingListRepository.findById(listId)
+                .orElseThrow(() -> {
+                    log.warn("Lista não encontrada: listId={}", listId);
+                    return new ShoppingListNotFoundException(listId);
+                });
+
+        // Validar ownership
+        if (!list.isOwnedBy(ownerId)) {
+            log.warn("Tentativa de acesso não autorizado: listId={}, ownerId={}, realOwnerId={}",
+                    listId, ownerId, list.getOwnerId());
+            throw new UnauthorizedShoppingListAccessException(listId);
+        }
+
+        log.debug("Lista encontrada: listId={}, itemsCount={}", listId, list.getItems().size());
+
+        // Mapear para resposta incluindo itens
+        return mapToResponseWithItems(list);
+    }
+
+    /**
+     * Mapeia entidade de domínio para DTO de resposta incluindo todos os itens.
+     */
+    private ShoppingListResponse mapToResponseWithItems(ShoppingList list) {
+        // Mapear itens para ItemResponse
+        List<ItemResponse> items = list.getItems().stream()
+                .map(this::mapItemToResponse)
+                .collect(Collectors.toList());
+
+        return ShoppingListResponse.builder()
+                .id(list.getId())
+                .ownerId(list.getOwnerId())
+                .title(list.getTitle())
+                .description(list.getDescription())
+                .items(items)
+                .itemsCount(list.countTotalItems())
+                .pendingItemsCount(list.countPendingItems())
+                .purchasedItemsCount(list.countPurchasedItems())
+                .createdAt(list.getCreatedAt())
+                .updatedAt(list.getUpdatedAt())
+                .build();
+    }
+
+    /**
+     * Mapeia um item de domínio para DTO de resposta.
+     */
+    private ItemResponse mapItemToResponse(ListItem item) {
+        return ItemResponse.builder()
+                .id(item.getId())
+                .name(item.getName().getValue())
+                .quantity(item.getQuantity())
+                .unit(item.getUnit())
+                .unitPrice(item.getUnitPrice())
+                .status(item.getStatus().name())
+                .createdAt(item.getCreatedAt())
+                .updatedAt(item.getUpdatedAt())
+                .build();
+    }
+}
+

@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: ${APP_NAME:shopping-list}
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: false
+
+app:
+  jwt:
+    secret: test-secret-key-minimum-256-bits-for-hs256-algorithm-secure
+    access-token:
+      expiration: 15m
+    refresh-token:
+      expiration: 1d
+  security:
+    refresh-token:
+      cookie:
+        name: refreshToken
+        http-only: true
+        secure: false # HTTP permitido em test
+        path: /api/v1/auth
+        same-site: Lax
+        max-age: 86400 # 1 dia (mesmo do token no test)
+        cookie-only: false # Retorna no body também (facilita testes)
+  google:
+    client-id: test-google-client-id

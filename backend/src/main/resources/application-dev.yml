@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: ${APP_NAME:shopping-list}
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:shoppinglist_db}
+    username: ${MYSQL_USER:admin}
+    password: ${MYSQL_PASSWORD:admin}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+      max-lifetime: 600000
+      connection-timeout: 30000
+      pool-name: HikariCP
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    clean-disabled: true
+
+app:
+  jwt:
+    access-token:
+      expiration: 1h
+    refresh-token:
+      expiration: 7d
+  security:
+    refresh-token:
+      cookie:
+        name: refreshToken
+        http-only: true
+        secure: false # HTTP permitido em dev
+        path: /api/v1/auth
+        same-site: Lax # Mais permissivo para dev
+        max-age: 604800 # 7 dias (mesmo do token)
+        cookie-only: false # Retorna no body também (backward compatibility)
+
+logging:
+  level:
+    root: INFO
+    com.shoppinglist: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+

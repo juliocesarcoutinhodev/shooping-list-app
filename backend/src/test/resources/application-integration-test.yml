@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: ${APP_NAME:shopping-list}
+
+  # Datasource será configurado dinamicamente pelo Testcontainers
+  # via @DynamicPropertySource
+
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Flyway gerencia o schema
+    show-sql: false       # Silencioso para testes mais limpos
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    clean-disabled: false  # Permite limpar banco entre testes
+
+app:
+  jwt:
+    secret: integration-test-secret-key-minimum-256-bits-for-hs256-algorithm
+    access-token:
+      expiration: 15m
+    refresh-token:
+      expiration: 1d
+  security:
+    refresh-token:
+      cookie:
+        name: refreshToken
+        http-only: true
+        secure: false
+        path: /api/v1/auth
+        same-site: Lax
+        max-age: 86400
+        cookie-only: false
+  google:
+    client-id: test-google-client-id
+
+logging:
+  level:
+    root: WARN
+    br.com.shooping.list: INFO
+    org.testcontainers: INFO
+    com.github.dockerjava: WARN
+

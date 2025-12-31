@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google OAuth2 - ID Token Generator</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #4285f4;
+            margin-bottom: 20px;
+        }
+        .token-display {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .info {
+            background: #e7f3ff;
+            border-left: 4px solid #4285f4;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .button-container {
+            margin: 20px 0;
+        }
+        button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #357ae8;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .user-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .user-info p {
+            margin: 5px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Google OAuth2 - ID Token Generator</h1>
+
+        <div class="info">
+            <strong>📝 Instruções:</strong>
+            <ol>
+                <li>Configure o Google Client ID abaixo</li>
+                <li>Clique em "Sign in with Google"</li>
+                <li>Copie o ID Token gerado</li>
+                <li>Use no Postman para testar sua API</li>
+            </ol>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Importante:</strong> Este ID Token expira em 1 hora. Você precisará gerar um novo token quando expirar.
+        </div>
+
+        <div>
+            <label for="clientId" style="display: block; margin-bottom: 5px; font-weight: bold;">
+                Google Client ID:
+            </label>
+            <input
+                type="text"
+                id="clientId"
+                placeholder="Cole seu Google Client ID aqui"
+                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"
+            />
+            <small style="color: #666;">
+                Obtenha em: <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a>
+            </small>
+        </div>
+
+        <div class="button-container">
+            <button id="loginButton" onclick="initializeGoogleSignIn()">
+                Configurar Google Sign-In
+            </button>
+        </div>
+
+        <div id="googleButtonContainer"></div>
+
+        <div id="userInfo" class="user-info" style="display: none;">
+            <h3>👤 Informações do Usuário:</h3>
+            <p><strong>Nome:</strong> <span id="userName"></span></p>
+            <p><strong>Email:</strong> <span id="userEmail"></span></p>
+            <p><strong>Email Verificado:</strong> <span id="emailVerified"></span></p>
+        </div>
+
+        <div id="tokenContainer" style="display: none;">
+            <h3>🔑 ID Token (JWT):</h3>
+            <div class="token-display" id="tokenDisplay"></div>
+            <button onclick="copyToken()" style="margin-top: 10px;">
+                📋 Copiar Token
+            </button>
+        </div>
+
+        <div id="curlContainer" style="display: none; margin-top: 20px;">
+            <h3>🚀 Teste com cURL:</h3>
+            <div class="token-display" id="curlCommand"></div>
+            <button onclick="copyCurl()" style="margin-top: 10px;">
+                📋 Copiar cURL
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentToken = '';
+        let currentCurl = '';
+
+        function initializeGoogleSignIn() {
+            const clientId = document.getElementById('clientId').value.trim();
+
+            if (!clientId) {
+                alert('❌ Por favor, insira o Google Client ID!');
+                return;
+            }
+
+            // Inicializa o Google Identity Services
+            google.accounts.id.initialize({
+                client_id: clientId,
+                callback: handleCredentialResponse
+            });
+
+            // Renderiza o botão de login
+            google.accounts.id.renderButton(
+                document.getElementById('googleButtonContainer'),
+                {
+                    theme: 'outline',
+                    size: 'large',
+                    text: 'signin_with',
+                    width: 250
+                }
+            );
+
+            document.getElementById('loginButton').disabled = true;
+            document.getElementById('loginButton').textContent = '✅ Google Sign-In Configurado';
+        }
+
+        function handleCredentialResponse(response) {
+            const idToken = response.credential;
+            currentToken = idToken;
+
+            // Decodifica o JWT para mostrar informações (apenas payload, sem validar assinatura)
+            const payload = JSON.parse(atob(idToken.split('.')[1]));
+
+            // Mostra informações do usuário
+            document.getElementById('userName').textContent = payload.name || 'N/A';
+            document.getElementById('userEmail').textContent = payload.email || 'N/A';
+            document.getElementById('emailVerified').textContent = payload.email_verified ? '✅ Sim' : '❌ Não';
+            document.getElementById('userInfo').style.display = 'block';
+
+            // Mostra o token
+            document.getElementById('tokenDisplay').textContent = idToken;
+            document.getElementById('tokenContainer').style.display = 'block';
+
+            // Gera comando cURL
+            currentCurl = `curl -X POST http://localhost:8080/api/v1/auth/google \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "idToken": "${idToken}"
+  }'`;
+
+            document.getElementById('curlCommand').textContent = currentCurl;
+            document.getElementById('curlContainer').style.display = 'block';
+
+            console.log('✅ ID Token obtido com sucesso!');
+            console.log('Token:', idToken);
+            console.log('Payload:', payload);
+        }
+
+        function copyToken() {
+            navigator.clipboard.writeText(currentToken).then(() => {
+                alert('✅ Token copiado para a área de transferência!');
+            }).catch(err => {
+                alert('❌ Erro ao copiar token: ' + err);
+            });
+        }
+
+        function copyCurl() {
+            navigator.clipboard.writeText(currentCurl).then(() => {
+                alert('✅ Comando cURL copiado para a área de transferência!');
+            }).catch(err => {
+                alert('❌ Erro ao copiar cURL: ' + err);
+            });
+        }
+    </script>
+</body>
+</html>
+

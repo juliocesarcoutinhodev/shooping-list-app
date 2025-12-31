@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: ${APP_NAME:shopping-list}
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 10
+      idle-timeout: 30000
+      max-lifetime: 600000
+      connection-timeout: 30000
+      pool-name: HikariCP
+  jpa:
+    hibernate:
+      ddl-auto: none # Nunca alterar schema em produção
+    show-sql: false # Logs SQL desabilitados em produção
+    properties:
+      hibernate:
+        format_sql: false
+        use_sql_comments: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    clean-disabled: true # Segurança: impede limpeza do banco
+
+app:
+  jwt:
+    access-token:
+      expiration: 15m # Token mais curto em produção
+    refresh-token:
+      expiration: 7d
+  security:
+    refresh-token:
+      cookie:
+        name: refreshToken
+        http-only: true
+        secure: true # HTTPS obrigatório em produção
+        path: /api/v1/auth
+        same-site: Strict # Máxima proteção CSRF em produção
+        max-age: 604800 # 7 dias (mesmo do token)
+        cookie-only: true # Apenas cookie (mais seguro, sem body)
+        domain: ${COOKIE_DOMAIN:} # Configurar domínio em produção se necessário
+
+logging:
+  level:
+    root: INFO
+    com.shoppinglist: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+
