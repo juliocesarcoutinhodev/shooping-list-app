@@ -28,6 +28,8 @@ export const Toast: React.FC<ToastProps> = ({
   position = 'bottom',
 }) => {
   const theme = useAppTheme();
+  // Detecta modo dark: no dark mode, o texto é branco (#FFFFFF), no light é verde escuro (#064E3B)
+  const isDark = theme.colors.text === '#FFFFFF';
   const translateY = React.useRef(new Animated.Value(100)).current;
   const opacity = React.useRef(new Animated.Value(0)).current;
 
@@ -80,6 +82,12 @@ export const Toast: React.FC<ToastProps> = ({
   if (!visible) return null;
 
   const getBackgroundColor = () => {
+    // No modo dark, usa a cor surface (como modais e cards) para consistência visual
+    if (isDark) {
+      return theme.colors.surface;
+    }
+
+    // No modo light, mantém as cores originais
     switch (type) {
       case 'success':
         return '#059669';
@@ -90,6 +98,16 @@ export const Toast: React.FC<ToastProps> = ({
       default:
         return '#059669';
     }
+  };
+
+  const getTextColor = () => {
+    // No modo dark, usa texto branco (como os demais elementos da tela)
+    if (isDark) {
+      return theme.colors.text; // Branco no modo dark
+    }
+
+    // No modo light, mantém texto branco sobre fundos coloridos
+    return theme.colors.textInverted;
   };
 
   return (
@@ -109,7 +127,7 @@ export const Toast: React.FC<ToastProps> = ({
         style={[
           styles.message,
           {
-            color: theme.colors.textInverted,
+            color: getTextColor(),
           },
         ]}
       >
