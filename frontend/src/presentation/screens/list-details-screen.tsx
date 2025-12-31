@@ -669,6 +669,7 @@ export const ListDetailsScreen: React.FC = () => {
         onSubmit={handleSubmitAddItem}
         loading={isAddingItem}
         error={addItemError}
+        onErrorDismiss={() => setAddItemError(null)}
       />
 
       {/* Modal de editar item */}
@@ -679,6 +680,7 @@ export const ListDetailsScreen: React.FC = () => {
         onSubmit={handleSubmitEditItem}
         loading={isUpdatingItem}
         error={updateItemError}
+        onErrorDismiss={() => setUpdateItemError(null)}
       />
 
       {/* Modal de Confirmação de Exclusão */}

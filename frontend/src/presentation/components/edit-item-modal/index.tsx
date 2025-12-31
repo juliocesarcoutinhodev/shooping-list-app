@@ -222,6 +222,7 @@ export interface EditItemModalProps {
   onSubmit: (data: { name: string; quantity: number; unitPrice?: number }) => Promise<void>;
   loading?: boolean;
   error?: string | null;
+  onErrorDismiss?: () => void;
 }
 
 export const EditItemModal: React.FC<EditItemModalProps> = ({
@@ -231,10 +232,22 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({
   onSubmit,
   loading = false,
   error: externalError = null,
+  onErrorDismiss,
 }) => {
   const theme = useAppTheme();
   const slideAnim = React.useRef(new Animated.Value(0)).current;
   const screenHeight = Dimensions.get('window').height;
+
+  // Auto-dismiss do erro após 5 segundos
+  useEffect(() => {
+    if (externalError && onErrorDismiss) {
+      const timer = setTimeout(() => {
+        onErrorDismiss();
+      }, 5000); // 5 segundos
+
+      return () => clearTimeout(timer);
+    }
+  }, [externalError, onErrorDismiss]);
 
   const {
     control,
