@@ -364,8 +364,16 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({
                 >
                 {/* Error Message */}
                 {externalError && (
-                  <View style={[styles.errorBanner, { backgroundColor: theme.colors.error }]}>
-                    <Text style={[styles.errorText, { color: theme.colors.textInverted }]}>
+                  <View
+                    style={[
+                      styles.errorBanner,
+                      {
+                        // Mantém fundo vermelho sempre para dar destaque ao erro
+                        backgroundColor: theme.colors.error,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.errorText, { color: '#FFFFFF' }]}>
                       {externalError}
                     </Text>
                   </View>

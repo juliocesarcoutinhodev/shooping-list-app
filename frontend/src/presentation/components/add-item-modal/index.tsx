@@ -331,10 +331,16 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
                 >
                   {/* Error Message */}
                   {externalError && (
-                    <View style={[styles.errorBanner, { backgroundColor: theme.colors.error }]}>
-                      <Text style={[styles.errorText, { color: theme.colors.textInverted }]}>
-                        {externalError}
-                      </Text>
+                    <View
+                      style={[
+                        styles.errorBanner,
+                        {
+                          // Mantém fundo vermelho sempre para dar destaque ao erro
+                          backgroundColor: theme.colors.error,
+                        },
+                      ]}
+                    >
+                      <Text style={[styles.errorText, { color: '#FFFFFF' }]}>{externalError}</Text>
                     </View>
                   )}
 
