@@ -95,16 +95,16 @@ export const ListCard: React.FC<ListCardProps> = ({
           </View>
         </View>
 
-        {/* Menu (3 pontos) */}
+        {/* Botão de deletar */}
         {onMenuPress && (
           <TouchableOpacity
             style={styles.menuButton}
             onPress={onMenuPress}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            accessibilityLabel='Menu de opções'
-            testID={testID ? `${testID}-menu` : 'list-card-menu'}
+            accessibilityLabel='Excluir lista'
+            testID={testID ? `${testID}-delete` : 'list-card-delete'}
           >
-            <Ionicons name='ellipsis-vertical' size={20} color={theme.colors.textSecondary} />
+            <Ionicons name='trash-outline' size={20} color={theme.colors.error} />
           </TouchableOpacity>
         )}
       </View>
