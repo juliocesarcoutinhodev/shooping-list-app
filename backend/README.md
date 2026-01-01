@@ -11,7 +11,7 @@ Backend da aplicação **Shopping List**, desenvolvido com **Java LTS** e **Spri
 ## 🚀 Tecnologias Utilizadas
 
 - **Java 21 (LTS)**
-- **Spring Boot 3.4.1**
+- **Spring Boot 3.5.7**
   - Spring Web
   - Spring Data JPA
   - Spring Security
@@ -273,21 +273,6 @@ Resposta esperada:
 }
 ```
 
-### Health Check Customizado (API v1)
-
-Endpoint customizado seguindo a arquitetura da aplicação:
-
-```
-http://localhost:8080/api/v1/health
-```
-
-Resposta esperada:
-
-```json
-{
-  "status": "UP"
-}
-```
 
 ---
 
@@ -310,7 +295,7 @@ Os testes utilizam **H2 Database em memória**, garantindo isolamento e performa
 ### Executar testes de uma classe específica
 
 ```bash
-./mvnw test -Dtest=HealthControllerTest
+./mvnw test -Dtest=ShoppingListControllerTest
 ```
 
 ### Características dos Testes
@@ -321,6 +306,7 @@ Os testes utilizam **H2 Database em memória**, garantindo isolamento e performa
 - ✅ **Rápido**: Não depende de containers Docker
 - ✅ **CI/CD friendly**: Funciona em qualquer ambiente (GitHub Actions, GitLab CI, etc.)
 - ✅ **Sem configuração adicional**: Basta rodar `mvn test`
+- ✅ **291 testes** (275 passando, 16 skipped por Testcontainers)
 
 ### Console H2 (Debug)
 
@@ -347,11 +333,11 @@ Testes Unitários:
   Total Auth: 42 testes unitários
 
 Testes de Domínio (DDD):
-  ✅ ShoppingListTest        : 25+ testes (100% passed)
-  ✅ ListItemTest           : 15+ testes (100% passed)
-  ✅ QuantityTest           : 10+ testes (100% passed)
-  ✅ ItemNameTest           : 8+ testes (100% passed)
-  Total Domínio: 58+ testes unitários puros
+  ✅ ShoppingListTest        : 37 testes (100% passed)
+  ✅ ListItemTest           : 20 testes (100% passed)
+  ✅ QuantityTest           : 15 testes (100% passed)
+  ✅ ItemNameTest           : 16 testes (100% passed)
+  Total Domínio: 88 testes unitários puros
 
 Testes de Aplicação (Shopping List):
   ✅ CreateShoppingListUseCaseTest   : 3 testes (100% passed)
@@ -362,7 +348,7 @@ Testes de Aplicação (Shopping List):
   ✅ AddItemToListUseCaseTest        : 5 testes (100% passed)
   ✅ UpdateItemUseCaseTest           : 9 testes (100% passed)
   ✅ RemoveItemFromListUseCaseTest   : 4 testes (100% passed)
-  Total Aplicação: 35+ testes unitários
+  Total Aplicação: 35 testes unitários (use cases de Shopping List)
 
 Testes de Persistência (JPA):
   ✅ JpaShoppingListRepositoryIntegrationTest : 11 testes (100% passed)
@@ -372,16 +358,17 @@ Testes de Integração:
   ✅ AuthController (Register) : 6 testes (100% passed)
   ✅ AuthController (Login)    : 10 testes (100% passed)
   ✅ AuthController (Refresh)  : 10 testes (100% passed)
+  ✅ AuthController (Cookies)  : 5 testes (100% passed)
   ✅ GoogleAuthController      : 8 testes (100% passed)
   ✅ JwtAuthentication         : 8 testes (100% passed)
-  ✅ AdminAuthorization        : 3 testes (100% passed)
-  ✅ ShoppingListController    : 26 testes (100% passed) - inclui GET /api/v1/lists/{id}
+  ✅ AdminAuthorization        : 7 testes (100% passed)
+  ✅ ShoppingListController    : 27 testes (100% passed) - inclui GET /api/v1/lists/{id}
   ✅ ShoppingListItemController: 18 testes (100% passed)
-  ✅ HealthController          : 1 teste  (100% passed)
-  Total: 90 testes de integração
+  ✅ SecurityConfig            : 1 teste  (100% passed)
+  Total: 100 testes de integração
 
-📈 Total Geral: 236+ testes | 236+ passing | 0 failures
-⚡ Tempo médio de execução: ~35 segundos
+📈 Total Geral: 291 testes | 275 passing | 0 failures | 16 skipped
+⚡ Tempo médio de execução: ~15 segundos
 🎯 Modelo de domínio: 100% cobertura das regras de negócio
 🎯 Camada de aplicação: 100% cobertura dos use cases
 🎯 Persistência JPA: 100% cobertura com banco real
@@ -1387,7 +1374,7 @@ backend/
     ├── main
     │   ├── java
     │   │   └── br.com.shooping.list
-    │   │       ├── StartupApplication.java
+    │   │       ├── StartupApplication.java (classe principal)
     │   │       ├── application
     │   │       │   ├── dto
     │   │       │   │   ├── ErrorResponse.java
@@ -1470,7 +1457,6 @@ backend/
     │   │               └── v1
     │   │                   ├── AdminController.java
     │   │                   ├── AuthController.java
-    │   │                   ├── HealthController.java
     │   │                   ├── ShoppingListController.java
     │   │                   ├── ShoppingListItemController.java
     │   │                   └── UserController.java
@@ -1528,7 +1514,6 @@ backend/
                             ├── AuthControllerRefreshTest.java
                             ├── AuthControllerTest.java
                             ├── GoogleAuthControllerIntegrationTest.java
-                            ├── HealthControllerTest.java
                             ├── JwtAuthenticationIntegrationTest.java
                             ├── ShoppingListControllerTest.java
                             └── ShoppingListItemControllerTest.java
@@ -1560,18 +1545,18 @@ O projeto é organizado em camadas para manter responsabilidades bem separadas:
 
 ### Health Check Endpoint
 
-- **Endpoint:** `GET /api/v1/health`
-- **Descrição:** Verifica o status da aplicação
+- **Endpoint:** `GET /actuator/health`
+- **Descrição:** Verifica o status da aplicação (Spring Boot Actuator)
 - **Resposta:**
   ```json
   {
     "status": "UP"
   }
   ```
-- **Camadas utilizadas:**
-  - `interfaces/rest/v1`: HealthController (camada de apresentação)
-  - `application/dto`: HealthResponse (DTO de resposta)
-- **Testes:** Teste de integração com `@WebMvcTest` validando o comportamento do endpoint
+- **Características:**
+  - Endpoint padrão do Spring Boot Actuator
+  - Não requer autenticação
+  - Útil para monitoramento e orquestração (Kubernetes, Docker Swarm)
 
 ### Registro de Usuário (User Registration)
 
@@ -2289,8 +2274,8 @@ Este projeto está licenciado sob a [MIT License](LICENSE).
 - **Projeto**: Shopping List API
 - **Versão**: 1.0.0-SNAPSHOT
 - **Java**: 21 LTS
-- **Spring Boot**: 3.4.1
+- **Spring Boot**: 3.5.7
 - **Arquitetura**: Clean Architecture + DDD
 - **Status**: 🚧 Em desenvolvimento ativo
 
-**Última atualização do README**: 29 de Dezembro de 2025
+**Última atualização do README**: 01 de Janeiro de 2026
