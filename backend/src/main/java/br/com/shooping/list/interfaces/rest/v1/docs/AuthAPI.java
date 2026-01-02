@@ -1,5 +1,6 @@
 package br.com.shooping.list.interfaces.rest.v1.docs;
 
+import br.com.shooping.list.application.dto.ErrorResponse;
 import br.com.shooping.list.application.dto.auth.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -81,14 +82,51 @@ public interface AuthAPI {
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid input (validation failed)",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: replace with your ValidationErrorResponse schema
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Validation error",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T10:30:00Z",
+                                              "status": 400,
+                                              "error": "Bad Request",
+                                              "message": "Invalid input (validation failed).",
+                                              "path": "/api/v1/auth/register",
+                                              "details": [
+                                                {
+                                                  "field": "email",
+                                                  "message": "Email deve ser válido",
+                                                  "rejectedValue": "invalid-email"
+                                                }
+                                              ],
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "409",
                     description = "Email already registered",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: replace with your ErrorResponse schema
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Conflict",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T10:30:00Z",
+                                              "status": 409,
+                                              "error": "Conflict",
+                                              "message": "Email already registered.",
+                                              "path": "/api/v1/auth/register",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             )
     })
     ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request);
@@ -131,15 +169,52 @@ public interface AuthAPI {
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid input",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: ValidationErrorResponse
+                    description = "Invalid input (validation failed)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Validation error",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T10:30:00Z",
+                                              "status": 400,
+                                              "error": "Bad Request",
+                                              "message": "Invalid input (validation failed).",
+                                              "path": "/api/v1/auth/login",
+                                              "details": [
+                                                {
+                                                  "field": "email",
+                                                  "message": "Email deve ser válido",
+                                                  "rejectedValue": "invalid-email"
+                                                }
+                                              ],
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Invalid credentials",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: ErrorResponse
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Unauthorized",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T10:30:00Z",
+                                              "status": 401,
+                                              "error": "Unauthorized",
+                                              "message": "Invalid credentials.",
+                                              "path": "/api/v1/auth/login",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             )
     })
     ResponseEntity<LoginResponse> login(
@@ -170,20 +245,60 @@ public interface AuthAPI {
                     description = "Google login successful",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = LoginResponse.class)
+                            schema = @Schema(implementation = LoginResponse.class),
+                            examples = @ExampleObject(
+                                    name = "JWT tokens",
+                                    value = """
+                                            {
+                                              "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+                                              "refreshToken": "eyJhbGciOiJIUzI1NiIs...",
+                                              "expiresIn": 900
+                                            }
+                                            """
+                            )
                     )
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid ID token",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: ErrorResponse
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Bad request",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T10:30:00Z",
+                                              "status": 400,
+                                              "error": "Bad Request",
+                                              "message": "Invalid ID token.",
+                                              "path": "/api/v1/auth/google",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Google token invalid or expired",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: ErrorResponse
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Unauthorized",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T10:30:00Z",
+                                              "status": 401,
+                                              "error": "Unauthorized",
+                                              "message": "Google token invalid or expired.",
+                                              "path": "/api/v1/auth/google",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             )
     })
     ResponseEntity<LoginResponse> googleLogin(
@@ -231,14 +346,44 @@ public interface AuthAPI {
             @ApiResponse(
                     responseCode = "400",
                     description = "Refresh token not provided",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: ErrorResponse
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Bad request",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T10:30:00Z",
+                                              "status": 400,
+                                              "error": "Bad Request",
+                                              "message": "Refresh token not provided.",
+                                              "path": "/api/v1/auth/refresh",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Refresh token invalid, expired or revoked",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: ErrorResponse
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Unauthorized",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T10:30:00Z",
+                                              "status": 401,
+                                              "error": "Unauthorized",
+                                              "message": "Refresh token invalid, expired or revoked.",
+                                              "path": "/api/v1/auth/refresh",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             )
     })
     ResponseEntity<RefreshTokenResponse> refresh(
@@ -268,14 +413,44 @@ public interface AuthAPI {
             @ApiResponse(
                     responseCode = "400",
                     description = "Refresh token not provided",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: ErrorResponse
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Bad request",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T10:30:00Z",
+                                              "status": 400,
+                                              "error": "Bad Request",
+                                              "message": "Refresh token not provided.",
+                                              "path": "/api/v1/auth/logout",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Unauthenticated (invalid access token)",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: ErrorResponse
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Unauthorized",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T10:30:00Z",
+                                              "status": 401,
+                                              "error": "Unauthorized",
+                                              "message": "Unauthenticated (invalid access token).",
+                                              "path": "/api/v1/auth/logout",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             )
     })
     ResponseEntity<Void> logout(

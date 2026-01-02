@@ -1,5 +1,6 @@
 package br.com.shooping.list.interfaces.rest.v1.docs;
 
+import br.com.shooping.list.application.dto.ErrorResponse;
 import br.com.shooping.list.application.dto.user.UserMeResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -73,14 +74,44 @@ public interface UserAPI {
             @ApiResponse(
                     responseCode = "401",
                     description = "Unauthenticated (missing or invalid token)",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: ErrorResponse schema
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Unauthorized",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T15:30:00Z",
+                                              "status": 401,
+                                              "error": "Unauthorized",
+                                              "message": "Unauthenticated.",
+                                              "path": "/api/v1/users/me",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "User not found (valid token but user no longer exists)",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: ErrorResponse schema
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Not found",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T15:30:00Z",
+                                              "status": 404,
+                                              "error": "Not Found",
+                                              "message": "User not found.",
+                                              "path": "/api/v1/users/me",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             )
     })
     ResponseEntity<UserMeResponse> getCurrentUser();

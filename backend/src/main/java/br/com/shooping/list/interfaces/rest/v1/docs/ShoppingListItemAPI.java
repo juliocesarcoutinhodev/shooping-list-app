@@ -1,5 +1,6 @@
 package br.com.shooping.list.interfaces.rest.v1.docs;
 
+import br.com.shooping.list.application.dto.ErrorResponse;
 import br.com.shooping.list.application.dto.shoppinglist.AddItemRequest;
 import br.com.shooping.list.application.dto.shoppinglist.ItemResponse;
 import br.com.shooping.list.application.dto.shoppinglist.UpdateItemRequest;
@@ -91,38 +92,135 @@ public interface ShoppingListItemAPI {
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid input (validation failed)",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: ValidationErrorResponse schema
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Validation error",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T10:05:00Z",
+                                              "status": 400,
+                                              "error": "Bad Request",
+                                              "message": "Invalid input (validation failed).",
+                                              "path": "/api/v1/lists/1/items",
+                                              "details": [
+                                                {
+                                                  "field": "name",
+                                                  "message": "Nome é obrigatório",
+                                                  "rejectedValue": ""
+                                                }
+                                              ],
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Unauthenticated",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: ErrorResponse schema
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Unauthorized",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T10:05:00Z",
+                                              "status": 401,
+                                              "error": "Unauthorized",
+                                              "message": "Unauthenticated.",
+                                              "path": "/api/v1/lists/1/items",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "403",
                     description = "Forbidden (not the list owner)",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: ErrorResponse schema
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Forbidden",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T10:05:00Z",
+                                              "status": 403,
+                                              "error": "Forbidden",
+                                              "message": "Forbidden (not the list owner).",
+                                              "path": "/api/v1/lists/1/items",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Shopping list not found",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: ErrorResponse schema
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Not found",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T10:05:00Z",
+                                              "status": 404,
+                                              "error": "Not Found",
+                                              "message": "Shopping list not found.",
+                                              "path": "/api/v1/lists/999/items",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "409",
                     description = "Item name already exists within the list",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: ErrorResponse schema
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Conflict",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T10:05:00Z",
+                                              "status": 409,
+                                              "error": "Conflict",
+                                              "message": "Item name already exists within the list.",
+                                              "path": "/api/v1/lists/1/items",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "422",
                     description = "List item limit reached (max 100 items)",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: ErrorResponse schema
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Unprocessable entity",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T10:05:00Z",
+                                              "status": 422,
+                                              "error": "Unprocessable Entity",
+                                              "message": "List item limit reached (max 100 items).",
+                                              "path": "/api/v1/lists/1/items",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             )
     })
     ResponseEntity<ItemResponse> addItemToList(
@@ -192,28 +290,107 @@ public interface ShoppingListItemAPI {
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid input or no fields provided",
-                    content = @Content(mediaType = "application/json")
-                    // TODO: ValidationErrorResponse schema
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Bad request",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T15:30:00Z",
+                                              "status": 400,
+                                              "error": "Bad Request",
+                                              "message": "Invalid input or no fields provided.",
+                                              "path": "/api/v1/lists/1/items/1",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Unauthenticated",
-                    content = @Content(mediaType = "application/json")
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Unauthorized",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T15:30:00Z",
+                                              "status": 401,
+                                              "error": "Unauthorized",
+                                              "message": "Unauthenticated.",
+                                              "path": "/api/v1/lists/1/items/1",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "403",
                     description = "Forbidden (not the list owner)",
-                    content = @Content(mediaType = "application/json")
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Forbidden",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T15:30:00Z",
+                                              "status": 403,
+                                              "error": "Forbidden",
+                                              "message": "Forbidden (not the list owner).",
+                                              "path": "/api/v1/lists/1/items/1",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Shopping list or item not found",
-                    content = @Content(mediaType = "application/json")
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Not found",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T15:30:00Z",
+                                              "status": 404,
+                                              "error": "Not Found",
+                                              "message": "Shopping list or item not found.",
+                                              "path": "/api/v1/lists/999/items/999",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "409",
                     description = "Item name already exists within the list",
-                    content = @Content(mediaType = "application/json")
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Conflict",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T15:30:00Z",
+                                              "status": 409,
+                                              "error": "Conflict",
+                                              "message": "Item name already exists within the list.",
+                                              "path": "/api/v1/lists/1/items/1",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             )
     })
     ResponseEntity<ItemResponse> updateItem(
@@ -258,17 +435,65 @@ public interface ShoppingListItemAPI {
             @ApiResponse(
                     responseCode = "401",
                     description = "Unauthenticated",
-                    content = @Content(mediaType = "application/json")
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Unauthorized",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T15:30:00Z",
+                                              "status": 401,
+                                              "error": "Unauthorized",
+                                              "message": "Unauthenticated.",
+                                              "path": "/api/v1/lists/1/items/1",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "403",
                     description = "Forbidden (not the list owner)",
-                    content = @Content(mediaType = "application/json")
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Forbidden",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T15:30:00Z",
+                                              "status": 403,
+                                              "error": "Forbidden",
+                                              "message": "Forbidden (not the list owner).",
+                                              "path": "/api/v1/lists/1/items/1",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Shopping list or item not found",
-                    content = @Content(mediaType = "application/json")
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Not found",
+                                    value = """
+                                            {
+                                              "timestamp": "2026-01-02T15:30:00Z",
+                                              "status": 404,
+                                              "error": "Not Found",
+                                              "message": "Shopping list or item not found.",
+                                              "path": "/api/v1/lists/999/items/999",
+                                              "correlationId": "c2f1b2aa6e9f4f4a9df2d7c7b1e4d7a1"
+                                            }
+                                            """
+                            )
+                    )
             )
     })
     ResponseEntity<Void> removeItem(
