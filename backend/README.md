@@ -23,7 +23,10 @@ Backend da aplicação **Shopping List**, desenvolvido com **Java LTS** e **Spri
 - **Maven**
 - **JUnit 5** + **Mockito**
 - **MapStruct 1.5.5** - Mapeamento automático Domain ↔ DTO
-- **Springdoc OpenAPI 2.3.0** - Documentação OpenAPI 3.0 com Swagger UI
+- **Springdoc OpenAPI 2.7.0** - Documentação OpenAPI 3.0 com Swagger UI
+  - 19 DTOs documentados com @Schema (enterprise-grade)
+  - Schemas agrupados por prefixo para navegação visual
+  - Campos com descrições, exemplos e validações
 - **Lombok** (apenas para Domain Layer - entidades JPA)
 - **MySQL 9** (Desenvolvimento)
 - **H2 Database** (Testes)
@@ -174,6 +177,93 @@ springdoc:
   swagger-ui:
     enabled: false
 ```
+
+### 📊 Schemas Enterprise-Grade
+
+Todos os DTOs (Data Transfer Objects) estão documentados seguindo padrões enterprise-grade usados por grandes empresas.
+
+#### Organização Visual por Prefixo:
+
+Os schemas aparecem **agrupados por prefixo** no Swagger UI, facilitando a navegação:
+
+- **Auth*** - Autenticação e autorização (8 schemas)
+  - `AuthLoginRequest`, `AuthTokensResponse`, `AuthRegisterRequest`, etc.
+  
+- **ShoppingList*** - Gerenciamento de listas (4 schemas)
+  - `ShoppingListCreateRequest`, `ShoppingListResponse`, `ShoppingListSummaryResponse`, etc.
+  
+- **ShoppingListItem*** - Gerenciamento de itens (3 schemas)
+  - `ShoppingListItemAddRequest`, `ShoppingListItemResponse`, etc.
+  
+- **User*** - Perfil do usuário (1 schema)
+  - `UserMeResponse`
+  
+- **Error*** - Respostas de erro (2 schemas)
+  - `ErrorResponse` (RFC 7807), `ErrorValidationError`
+
+#### Documentação Completa de Campos:
+
+Cada campo dos DTOs possui:
+- ✅ **Descrição em ENGLISH** (padrão internacional)
+- ✅ **Exemplo realista** do valor esperado
+- ✅ **Tipo e formato** (string, number, date-time, etc)
+- ✅ **Obrigatoriedade** (required/optional)
+- ✅ **Validações** (minLength, maxLength, allowableValues)
+- ✅ **Modo de acesso** (READ_ONLY para server-generated, WRITE_ONLY para sensíveis)
+
+#### Exemplo de Schema Documentado:
+
+```json
+// AuthLoginRequest no Swagger UI
+{
+  "email": "user@example.com",          // ← Exemplo clicável
+  "password": "MySecureP@ssw0rd"        // ← WRITE_ONLY (não aparece em responses)
+}
+
+// ShoppingListResponse
+{
+  "id": 1,                               // ← READ_ONLY (gerado pelo servidor)
+  "ownerId": 1,
+  "title": "Monthly Groceries",
+  "description": "Supermarket shopping",
+  "items": [...],
+  "itemsCount": 5,
+  "pendingItemsCount": 3,
+  "purchasedItemsCount": 2,
+  "createdAt": "2026-01-02T10:00:00.000Z",  // ← READ_ONLY
+  "updatedAt": "2026-01-02T15:30:00.000Z"   // ← READ_ONLY
+}
+```
+
+#### ErrorResponse (RFC 7807):
+
+Erros seguem o padrão **RFC 7807 (Problem Details for HTTP APIs)**:
+
+```json
+{
+  "timestamp": "2026-01-02T15:30:45.123Z",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Validation failed for request body",
+  "path": "/api/v1/auth/register",
+  "details": [
+    {
+      "field": "email",
+      "message": "Email é obrigatório",
+      "rejectedValue": null
+    }
+  ],
+  "correlationId": "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"  // ← Para debugging
+}
+```
+
+#### Benefícios:
+
+- ✅ **Navegação intuitiva** - Schemas agrupados visualmente
+- ✅ **Documentação completa** - Todos os campos com exemplos
+- ✅ **Type-safe** - Validação em tempo de compilação
+- ✅ **Integração fácil** - Exportar para Postman, gerar clientes
+- ✅ **Onboarding rápido** - Novos desenvolvedores entendem a API pelos exemplos
 
 ---
 
@@ -2515,6 +2605,110 @@ Para testar rapidamente sem frontend:
 ---
 
 ## 🆕 Melhorias Recentes
+
+### ✨ **v1.5.0 - OpenAPI Schemas Enterprise-Grade (Janeiro 2026)**
+
+**🎯 Objetivo:** Padronizar e documentar todos os DTOs seguindo convenções enterprise-grade usadas por grandes empresas (Stripe, GitHub, AWS)
+
+**Mudanças implementadas:**
+
+- ✅ **19 DTOs completamente documentados com @Schema:**
+  - 8 Auth DTOs (Login, Register, Google, Refresh, Logout, Tokens, etc)
+  - 5 Shopping List DTOs (Create, Update, Response, Summary)
+  - 3 Shopping List Item DTOs (Add, Update, Response)
+  - 1 User DTO (MeResponse)
+  - 1 Error DTO (ErrorResponse + ValidationError)
+  - 1 Health DTO
+
+- ✅ **Nomenclatura padronizada para agrupamento visual:**
+  - `Auth*` - AuthLoginRequest, AuthTokensResponse, AuthRegisterRequest, etc.
+  - `ShoppingList*` - ShoppingListCreateRequest, ShoppingListResponse, etc.
+  - `ShoppingListItem*` - ShoppingListItemAddRequest, ShoppingListItemResponse, etc.
+  - `User*` - UserMeResponse
+  - `Error*` - ErrorResponse, ErrorValidationError
+  - Schemas agrupados por prefixo no Swagger UI (simula "folders")
+
+- ✅ **Documentação completa de cada campo:**
+  - Descrições em ENGLISH (padrão internacional)
+  - Exemplos realistas para cada campo
+  - `requiredMode` (REQUIRED/NOT_REQUIRED) especificado
+  - Validações documentadas (minLength, maxLength, allowableValues)
+  - Mensagens de validação Bean mantidas em PT-BR
+
+- ✅ **Segurança nos schemas:**
+  - Campos sensíveis com `accessMode = WRITE_ONLY` (password, idToken, refreshToken)
+  - Campos server-generated com `accessMode = READ_ONLY` (id, createdAt, updatedAt)
+  - Nenhum dado sensível exposto em responses
+
+- ✅ **ErrorResponse RFC 7807 completo:**
+  - Todos os campos documentados (timestamp, status, error, message, path)
+  - ValidationError nested record documentado
+  - CorrelationId documentado para distributed tracing
+  - Exemplos realistas de erro
+
+- ✅ **Benefícios alcançados:**
+  - **Navegação visual melhorada** - Schemas agrupados por prefixo no Swagger UI
+  - **Documentação sempre atualizada** - Gerada automaticamente do código
+  - **Integração com ferramentas** - Postman, Insomnia, Swagger Codegen
+  - **Onboarding facilitado** - Novos devs entendem API pelos exemplos
+  - **Type-safe** - Validação em tempo de compilação
+  - **Padrão internacional** - Descrições em ENGLISH
+
+**📊 Estrutura de Schemas no Swagger UI:**
+```
+Schemas (ordenados alfabeticamente, agrupados por prefixo)
+├── Auth* (8 schemas)
+│   ├── AuthGoogleLoginRequest
+│   ├── AuthLoginRequest
+│   ├── AuthLogoutRequest
+│   ├── AuthRefreshRequest
+│   ├── AuthRefreshResponse
+│   ├── AuthRegisterRequest
+│   ├── AuthRegisterResponse
+│   └── AuthTokensResponse
+├── Error* (2 schemas)
+│   ├── ErrorResponse
+│   └── ErrorValidationError
+├── ShoppingList* (4 schemas)
+│   ├── ShoppingListCreateRequest
+│   ├── ShoppingListResponse
+│   ├── ShoppingListSummaryResponse
+│   └── ShoppingListUpdateRequest
+├── ShoppingListItem* (3 schemas)
+│   ├── ShoppingListItemAddRequest
+│   ├── ShoppingListItemResponse
+│   └── ShoppingListItemUpdateRequest
+└── User* (1 schema)
+    └── UserMeResponse
+```
+
+**Exemplo de documentação aplicada:**
+```java
+@Schema(
+    name = "AuthLoginRequest",
+    description = "Login credentials for LOCAL authentication (email + password)"
+)
+public record LoginRequest(
+    @Schema(
+        description = "User email address",
+        example = "user@example.com",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    String email,
+    
+    @Schema(
+        description = "User password",
+        example = "MySecureP@ssw0rd",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        accessMode = Schema.AccessMode.WRITE_ONLY
+    )
+    String password
+) {}
+```
+
+**Impacto:** Swagger UI enterprise-grade com navegação intuitiva, documentação completa e agrupamento visual de schemas
+
+---
 
 ### ✨ **v1.4.0 - Segurança JWT no Swagger UI (Janeiro 2026)**
 
