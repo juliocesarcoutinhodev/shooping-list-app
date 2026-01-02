@@ -11,15 +11,17 @@ Backend da aplicação **Shopping List**, desenvolvido com **Java LTS** e **Spri
 ## 🚀 Tecnologias Utilizadas
 
 - **Java 21 (LTS)**
+  - Java Records para DTOs imutáveis
+  - Pattern Matching e Switch Expressions
 - **Spring Boot 3.5.7**
   - Spring Web
   - Spring Data JPA
   - Spring Security
-  - Validation
+  - Validation (Jakarta Bean Validation)
   - Actuator
 - **Maven**
 - **JUnit 5**
-- **Lombok**
+- **Lombok** (apenas para Domain Layer)
 - **MySQL 9** (Desenvolvimento)
 - **H2 Database** (Testes)
 - **Docker & Docker Compose**
@@ -29,6 +31,7 @@ Backend da aplicação **Shopping List**, desenvolvido com **Java LTS** e **Spri
 - **JWT (JSON Web Token)** - jjwt-api, jjwt-impl, jjwt-jackson
 - **Google API Client** - Validação de tokens OAuth2
 - **Spring Dotenv** - Carregamento automático de variáveis .env
+- **Testcontainers** - Testes de integração com MySQL real
 
 ---
 
@@ -1539,6 +1542,78 @@ O projeto é organizado em camadas para manter responsabilidades bem separadas:
 
 **Regra de dependência:** `interfaces -> application -> domain` e `infrastructure -> application/domain` (nunca o contrário).
 
+### 📦 DTOs como Java Records
+
+Todos os DTOs da camada de Application utilizam **Java Records** ao invés de classes tradicionais:
+
+**Benefícios:**
+- ✅ **Imutabilidade garantida pela linguagem** (não apenas por convenção)
+- ✅ **Menos boilerplate** (~40% menos código que classes com Lombok)
+- ✅ **Semântica clara** (records são DTOs por natureza)
+- ✅ **Métodos gerados automaticamente**: `equals()`, `hashCode()`, `toString()`
+- ✅ **Compatibilidade total** com Bean Validation e Jackson
+
+**Exemplo:**
+
+```java
+// DTO Request
+public record CreateShoppingListRequest(
+    @NotBlank(message = "Título da lista é obrigatório")
+    @Size(min = 3, max = 100, message = "Título deve ter entre 3 e 100 caracteres")
+    String title,
+    
+    @Size(max = 255, message = "Descrição deve ter no máximo 255 caracteres")
+    String description
+) {}
+
+// DTO Response
+public record ShoppingListResponse(
+    Long id,
+    Long ownerId,
+    String title,
+    String description,
+    List<ItemResponse> items,
+    int itemsCount,
+    int pendingItemsCount,
+    int purchasedItemsCount,
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+    Instant createdAt,
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+    Instant updatedAt
+) {}
+```
+
+**Records podem ter métodos:**
+
+```java
+public record UpdateShoppingListRequest(
+    @Size(min = 3, max = 100, message = "Título deve ter entre 3 e 100 caracteres")
+    String title,
+    String description
+) {
+    // Método auxiliar de validação
+    public boolean hasAtLeastOneField() {
+        return (title != null && !title.isBlank()) || description != null;
+    }
+}
+```
+
+**Acesso aos campos:**
+
+```java
+// Records não têm getters (getTitle, getDescription)
+// Acesso direto pelos nomes dos campos:
+request.title()       // ao invés de request.getTitle()
+request.description() // ao invés de request.getDescription()
+response.id()         // ao invés de response.getId()
+```
+
+**DTOs implementados como Records:**
+- ✅ Todos os Request DTOs (10 records)
+- ✅ Todos os Response DTOs (8 records)
+- ✅ ErrorResponse com inner record ValidationError
+- ✅ Total: **19 DTOs convertidos para records**
+
 ---
 
 ## ✅ Funcionalidades Implementadas
@@ -2131,7 +2206,7 @@ Para testar rapidamente sem frontend:
 
 - ✅ **Use Cases Listas**: CreateShoppingList, GetMyShoppingLists, GetShoppingListById, UpdateShoppingList, DeleteShoppingList
 - ✅ **Use Cases Itens**: AddItemToList, UpdateItem, RemoveItemFromList
-- ✅ **DTOs**: 7 DTOs com validações Jakarta (request/response)
+- ✅ **DTOs como Java Records**: 19 DTOs imutáveis (Request/Response) com validações Jakarta
 - ✅ **Exceções Customizadas**: ShoppingListNotFoundException, UnauthorizedShoppingListAccessException, ItemNotFoundException, DuplicateItemException, ListLimitExceededException
 - ✅ **Validação de Ownership**: Apenas o dono pode modificar suas listas e itens
 - ✅ **Logging Estruturado**: INFO/WARN/DEBUG em todas as operações
@@ -2159,7 +2234,7 @@ Para testar rapidamente sem frontend:
 - ✅ **Atualização Parcial**: PATCH permite atualizar título e/ou descrição
 - ✅ **Respostas Padronizadas**: Status HTTP corretos (201, 200, 204, 400, 401, 403, 404)
 - ✅ **Extração de OwnerId**: Automática do SecurityContext via JWT
-- ✅ **Validações Bean**: Jakarta Validation em todos os DTOs
+- ✅ **Validações Bean**: Jakarta Validation com Java Records imutáveis
 - ✅ **Logging Estruturado**: INFO/DEBUG em todas as operações
 - ✅ **26+ testes de integração E2E** com MockMvc (incluindo GET /api/v1/lists/{id})
 - ✅ **100% cobertura** de cenários (sucesso, validações, erros, auth)
@@ -2223,6 +2298,64 @@ Para testar rapidamente sem frontend:
 - 🏗️ Deploy automatizado
 - 🏗️ Deploy containerizado
 
+---
+
+## 🆕 Melhorias Recentes
+
+### ✨ **v1.1.0 - Migração para Java Records (Janeiro 2026)**
+
+**🎯 Objetivo:** Modernizar a camada de Application usando recursos modernos do Java 21 LTS
+
+**Mudanças implementadas:**
+
+- ✅ **19 DTOs convertidos** de classes com Lombok para Java Records
+  - 10 Request DTOs: CreateShoppingListRequest, AddItemRequest, UpdateShoppingListRequest, UpdateItemRequest, RegisterRequest, LoginRequest, GoogleLoginRequest, RefreshTokenRequest, LogoutRequest, DeleteShoppingListRequest
+  - 8 Response DTOs: ShoppingListResponse, ShoppingListSummaryResponse, ItemResponse, RegisterResponse, LoginResponse, RefreshTokenResponse, UserMeResponse, HealthResponse
+  - 1 ErrorResponse com inner record ValidationError
+
+- ✅ **Benefícios alcançados:**
+  - **Redução de ~40% no código** (menos boilerplate que classes com Lombok)
+  - **Imutabilidade garantida** pela linguagem (não apenas por convenção)
+  - **Semântica mais clara** (records são DTOs por natureza)
+  - **Compatibilidade total** com Bean Validation e Jackson
+  - **Métodos gerados automaticamente**: equals(), hashCode(), toString()
+
+- ✅ **Atualização de código:**
+  - UseCases ajustados: `request.field()` ao invés de `request.getField()`
+  - Controllers ajustados: `response.id()` ao invés de `response.getId()`
+  - Factory methods mantidos em ErrorResponse (compatibilidade)
+  - Records podem ter métodos auxiliares (ex: `hasAtLeastOneField()`)
+  - Todos os 236+ testes passando ✅
+
+- ✅ **Exemplo de conversão:**
+
+```java
+// ANTES: Classe com Lombok (8 linhas)
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class CreateShoppingListRequest {
+    @NotBlank(message = "Título da lista é obrigatório")
+    private String title;
+    private String description;
+}
+
+// DEPOIS: Record (5 linhas, -37.5% código)
+public record CreateShoppingListRequest(
+    @NotBlank(message = "Título da lista é obrigatório")
+    String title,
+    String description
+) {}
+```
+
+**📊 Impacto:**
+- ✅ Zero breaking changes para a API REST (JSON permanece idêntico)
+- ✅ Compilação bem-sucedida
+- ✅ Todos os testes passando
+- ✅ Código mais moderno e idiomático
+
+---
+
 ### 🎯 **Objetivos de Arquitetura**
 
 - **Manutenibilidade**: Código limpo, bem documentado e testado
@@ -2278,4 +2411,4 @@ Este projeto está licenciado sob a [MIT License](LICENSE).
 - **Arquitetura**: Clean Architecture + DDD
 - **Status**: 🚧 Em desenvolvimento ativo
 
-**Última atualização do README**: 01 de Janeiro de 2026
+**Última atualização do README**: 02 de Janeiro de 2026

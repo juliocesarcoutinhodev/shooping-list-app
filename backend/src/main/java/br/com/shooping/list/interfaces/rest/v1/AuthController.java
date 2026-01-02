@@ -50,11 +50,11 @@ public class AuthController {
      */
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
-        log.info("Requisição de registro recebida para email: {}", request.getEmail());
+        log.info("Requisição de registro recebida para email: {}", request.email());
 
         var response = registerUserUseCase.execute(request);
 
-        log.info("Usuário registrado com sucesso: id={}", response.getId());
+        log.info("Usuário registrado com sucesso: id={}", response.id());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -72,7 +72,7 @@ public class AuthController {
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse
     ) {
-        log.info("Requisição de login recebida para email: {}", request.getEmail());
+        log.info("Requisição de login recebida para email: {}", request.email());
 
         String userAgent = httpRequest.getHeader("User-Agent");
         String ip = extractClientIp(httpRequest);
@@ -80,19 +80,19 @@ public class AuthController {
         var response = loginUserUseCase.execute(request, userAgent, ip);
 
         // Adiciona refresh token no cookie HttpOnly
-        cookieService.addRefreshTokenCookie(httpResponse, response.getRefreshToken());
+        cookieService.addRefreshTokenCookie(httpResponse, response.refreshToken());
 
         // Se cookie-only está ativado, remove refresh token do body (mais seguro)
         if (cookieService.isCookieOnly()) {
             response = new LoginResponse(
-                    response.getAccessToken(),
+                    response.accessToken(),
                     null, // refresh token só no cookie
-                    response.getExpiresIn()
+                    response.expiresIn()
             );
             log.debug("Modo cookie-only ativado: refresh token removido do body");
         }
 
-        log.info("Login realizado com sucesso para email: {}", request.getEmail());
+        log.info("Login realizado com sucesso para email: {}", request.email());
         return ResponseEntity.ok(response);
     }
 
@@ -112,10 +112,10 @@ public class AuthController {
     ) {
         log.info("Requisição de login via Google OAuth2 recebida");
 
-        var response = googleLoginUseCase.execute(request.getIdToken(), httpRequest);
+        var response = googleLoginUseCase.execute(request.idToken(), httpRequest);
 
         // Adiciona refresh token no cookie HttpOnly
-        cookieService.addRefreshTokenCookie(httpResponse, response.getRefreshToken());
+        cookieService.addRefreshTokenCookie(httpResponse, response.refreshToken());
 
         log.info("Login via Google realizado com sucesso");
         return ResponseEntity.ok(response);
@@ -141,12 +141,12 @@ public class AuthController {
         // Prioriza cookie, mas aceita body se não houver cookie (backward compatibility)
         String refreshToken = cookieService.getRefreshTokenFromCookie(httpRequest)
                 .orElseGet(() -> {
-                    if (request == null || request.getRefreshToken() == null || request.getRefreshToken().isBlank()) {
+                    if (request == null || request.refreshToken() == null || request.refreshToken().isBlank()) {
                         log.warn("Refresh token não encontrado nem no cookie nem no body");
                         throw new IllegalArgumentException("Refresh token é obrigatório");
                     }
                     log.debug("Usando refresh token do body (cookie não encontrado)");
-                    return request.getRefreshToken();
+                    return request.refreshToken();
                 });
 
         String userAgent = httpRequest.getHeader("User-Agent");
@@ -156,14 +156,14 @@ public class AuthController {
         var response = refreshTokenUseCase.execute(refreshRequest, userAgent, ip);
 
         // Adiciona novo refresh token no cookie HttpOnly (rotação)
-        cookieService.addRefreshTokenCookie(httpResponse, response.getRefreshToken());
+        cookieService.addRefreshTokenCookie(httpResponse, response.refreshToken());
 
         // Se cookie-only está ativado, remove refresh token do body (mais seguro)
         if (cookieService.isCookieOnly()) {
             response = new RefreshTokenResponse(
-                    response.getAccessToken(),
+                    response.accessToken(),
                     null, // refresh token só no cookie
-                    response.getExpiresIn()
+                    response.expiresIn()
             );
             log.debug("Modo cookie-only ativado: refresh token removido do body");
         }
@@ -192,12 +192,12 @@ public class AuthController {
         // Prioriza cookie, mas aceita body se não houver cookie (backward compatibility)
         String refreshToken = cookieService.getRefreshTokenFromCookie(httpRequest)
                 .orElseGet(() -> {
-                    if (request == null || request.getRefreshToken() == null || request.getRefreshToken().isBlank()) {
+                    if (request == null || request.refreshToken() == null || request.refreshToken().isBlank()) {
                         log.warn("Refresh token não encontrado nem no cookie nem no body");
                         throw new IllegalArgumentException("Refresh token é obrigatório");
                     }
                     log.debug("Usando refresh token do body (cookie não encontrado)");
-                    return request.getRefreshToken();
+                    return request.refreshToken();
                 });
 
         var logoutRequest = new LogoutRequest(refreshToken);

@@ -177,7 +177,7 @@ class LogoutUseCaseTest {
         String capturedHash = hashCaptor.getValue();
         // Hash SHA-256 em Base64 deve ter tamanho específico
         assertThat(capturedHash).isNotEmpty();
-        assertThat(capturedHash).isNotEqualTo(validRequest.getRefreshToken());
+        assertThat(capturedHash).isNotEqualTo(validRequest.refreshToken());
     }
 
     @Test

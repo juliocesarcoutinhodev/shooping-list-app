@@ -35,22 +35,22 @@ public class RegisterUserUseCase {
 
     @Transactional
     public RegisterResponse execute(RegisterRequest request) {
-        log.info("Iniciando registro de usuário: email={}", request.getEmail());
+        log.info("Iniciando registro de usuário: email={}", request.email());
 
         // Validar email único
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            log.warn("Tentativa de registro com email duplicado: {}", request.getEmail());
-            throw new EmailAlreadyExistsException(request.getEmail());
+        if (userRepository.findByEmail(request.email()).isPresent()) {
+            log.warn("Tentativa de registro com email duplicado: {}", request.email());
+            throw new EmailAlreadyExistsException(request.email());
         }
 
         // Hash da senha
-        String passwordHash = passwordEncoder.encode(request.getPassword());
-        log.debug("Senha hashada com sucesso para email={}", request.getEmail());
+        String passwordHash = passwordEncoder.encode(request.password());
+        log.debug("Senha hashada com sucesso para email={}", request.email());
 
         // Criar usuário no domínio
         User user = User.createLocalUser(
-                request.getEmail(),
-                request.getName(),
+                request.email(),
+                request.name(),
                 passwordHash
         );
 
@@ -62,21 +62,21 @@ public class RegisterUserUseCase {
                 });
 
         user.addRole(userRole);
-        log.debug("Role USER atribuída ao usuário: email={}", request.getEmail());
+        log.debug("Role USER atribuída ao usuário: email={}", request.email());
 
         // Persistir
         var savedUser = userRepository.save(user);
         log.info("Usuário registrado com sucesso: id={}, email={}", savedUser.getId(), savedUser.getEmail());
 
         // Mapear para resposta (sem dados sensíveis)
-        return RegisterResponse.builder()
-                .id(savedUser.getId())
-                .email(savedUser.getEmail())
-                .name(savedUser.getName())
-                .provider(savedUser.getProvider())
-                .status(savedUser.getStatus())
-                .createdAt(savedUser.getCreatedAt())
-                .build();
+        return new RegisterResponse(
+                savedUser.getId(),
+                savedUser.getEmail(),
+                savedUser.getName(),
+                savedUser.getProvider(),
+                savedUser.getStatus(),
+                savedUser.getCreatedAt()
+        );
     }
 }
 

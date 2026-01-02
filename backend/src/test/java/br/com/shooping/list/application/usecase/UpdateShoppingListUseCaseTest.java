@@ -60,8 +60,8 @@ class UpdateShoppingListUseCaseTest {
         ShoppingListResponse response = updateShoppingListUseCase.execute(ownerId, listId, request);
 
         // Assert
-        assertThat(response.getTitle()).isEqualTo("Novo Título");
-        assertThat(response.getDescription()).isEqualTo("Descrição Antiga"); // Não mudou
+        assertThat(response.title()).isEqualTo("Novo Título");
+        assertThat(response.description()).isEqualTo("Descrição Antiga"); // Não mudou
         verify(shoppingListRepository).findById(listId);
         verify(shoppingListRepository).save(existingList);
     }
@@ -78,8 +78,8 @@ class UpdateShoppingListUseCaseTest {
         ShoppingListResponse response = updateShoppingListUseCase.execute(ownerId, listId, request);
 
         // Assert
-        assertThat(response.getTitle()).isEqualTo("Título Antigo"); // Não mudou
-        assertThat(response.getDescription()).isEqualTo("Nova Descrição");
+        assertThat(response.title()).isEqualTo("Título Antigo"); // Não mudou
+        assertThat(response.description()).isEqualTo("Nova Descrição");
         verify(shoppingListRepository).findById(listId);
         verify(shoppingListRepository).save(existingList);
     }
@@ -96,8 +96,8 @@ class UpdateShoppingListUseCaseTest {
         ShoppingListResponse response = updateShoppingListUseCase.execute(ownerId, listId, request);
 
         // Assert
-        assertThat(response.getTitle()).isEqualTo("Novo Título");
-        assertThat(response.getDescription()).isEqualTo("Nova Descrição");
+        assertThat(response.title()).isEqualTo("Novo Título");
+        assertThat(response.description()).isEqualTo("Nova Descrição");
         verify(shoppingListRepository).findById(listId);
         verify(shoppingListRepository).save(existingList);
     }
@@ -161,7 +161,7 @@ class UpdateShoppingListUseCaseTest {
         ShoppingListResponse response = updateShoppingListUseCase.execute(ownerId, listId, request);
 
         // Assert
-        assertThat(response.getDescription()).isNull();
+        assertThat(response.description()).isNull();
         verify(shoppingListRepository).save(existingList);
     }
 

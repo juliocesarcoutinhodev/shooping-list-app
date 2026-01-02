@@ -85,13 +85,13 @@ class RegisterUserUseCaseTest {
     void shouldRegisterUserSuccessfully() {
         // Arrange
         String hashedPassword = "$2a$10$hashedPassword";
-        when(userRepository.findByEmail(validRequest.getEmail())).thenReturn(Optional.empty());
-        when(passwordEncoder.encode(validRequest.getPassword())).thenReturn(hashedPassword);
+        when(userRepository.findByEmail(validRequest.email())).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(validRequest.password())).thenReturn(hashedPassword);
         when(roleRepository.findByName("USER")).thenReturn(Optional.of(userRole));
 
         User savedUser = User.createLocalUser(
-                validRequest.getEmail(),
-                validRequest.getName(),
+                validRequest.email(),
+                validRequest.name(),
                 hashedPassword
         );
         // Simulando ID gerado pelo banco
@@ -109,16 +109,16 @@ class RegisterUserUseCaseTest {
 
         // Assert
         assertThat(response).isNotNull();
-        assertThat(response.getId()).isEqualTo(1L);
-        assertThat(response.getEmail()).isEqualTo(validRequest.getEmail());
-        assertThat(response.getName()).isEqualTo(validRequest.getName());
-        assertThat(response.getProvider()).isEqualTo(AuthProvider.LOCAL);
-        assertThat(response.getStatus()).isEqualTo(UserStatus.ACTIVE);
-        assertThat(response.getCreatedAt()).isNotNull();
+        assertThat(response.id()).isEqualTo(1L);
+        assertThat(response.email()).isEqualTo(validRequest.email());
+        assertThat(response.name()).isEqualTo(validRequest.name());
+        assertThat(response.provider()).isEqualTo(AuthProvider.LOCAL);
+        assertThat(response.status()).isEqualTo(UserStatus.ACTIVE);
+        assertThat(response.createdAt()).isNotNull();
 
         // Verify
-        verify(userRepository).findByEmail(validRequest.getEmail());
-        verify(passwordEncoder).encode(validRequest.getPassword());
+        verify(userRepository).findByEmail(validRequest.email());
+        verify(passwordEncoder).encode(validRequest.password());
         verify(userRepository).save(any(User.class));
     }
 
@@ -128,7 +128,7 @@ class RegisterUserUseCaseTest {
         // Arrange
         String hashedPassword = "$2a$10$differentHash";
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
-        when(passwordEncoder.encode(validRequest.getPassword())).thenReturn(hashedPassword);
+        when(passwordEncoder.encode(validRequest.password())).thenReturn(hashedPassword);
         when(roleRepository.findByName("USER")).thenReturn(Optional.of(userRole));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -141,7 +141,7 @@ class RegisterUserUseCaseTest {
 
         User savedUser = userCaptor.getValue();
         assertThat(savedUser.getPasswordHash()).isEqualTo(hashedPassword);
-        assertThat(savedUser.getPasswordHash()).isNotEqualTo(validRequest.getPassword());
+        assertThat(savedUser.getPasswordHash()).isNotEqualTo(validRequest.password());
     }
 
     @Test
@@ -149,19 +149,19 @@ class RegisterUserUseCaseTest {
     void shouldThrowExceptionWhenEmailAlreadyExists() {
         // Arrange
         User existingUser = User.createLocalUser(
-                validRequest.getEmail(),
+                validRequest.email(),
                 "Outro User",
                 "hashedPassword"
         );
-        when(userRepository.findByEmail(validRequest.getEmail())).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByEmail(validRequest.email())).thenReturn(Optional.of(existingUser));
 
         // Act & Assert
         assertThatThrownBy(() -> registerUserUseCase.execute(validRequest))
                 .isInstanceOf(EmailAlreadyExistsException.class)
-                .hasMessageContaining(validRequest.getEmail());
+                .hasMessageContaining(validRequest.email());
 
         // Verify
-        verify(userRepository).findByEmail(validRequest.getEmail());
+        verify(userRepository).findByEmail(validRequest.email());
         verify(passwordEncoder, never()).encode(anyString());
         verify(userRepository, never()).save(any(User.class));
     }
@@ -179,7 +179,7 @@ class RegisterUserUseCaseTest {
         RegisterResponse response = registerUserUseCase.execute(validRequest);
 
         // Assert
-        assertThat(response.getProvider()).isEqualTo(AuthProvider.LOCAL);
+        assertThat(response.provider()).isEqualTo(AuthProvider.LOCAL);
     }
 
     @Test
@@ -195,7 +195,7 @@ class RegisterUserUseCaseTest {
         RegisterResponse response = registerUserUseCase.execute(validRequest);
 
         // Assert
-        assertThat(response.getStatus()).isEqualTo(UserStatus.ACTIVE);
+        assertThat(response.status()).isEqualTo(UserStatus.ACTIVE);
     }
 
     @Test

@@ -50,11 +50,11 @@ public class ShoppingListController {
         log.info("Requisição recebida: POST /api/v1/lists");
 
         Long ownerId = extractOwnerId();
-        log.debug("Criando lista de compras para usuário: ownerId={}, title={}", ownerId, request.getTitle());
+        log.debug("Criando lista de compras para usuário: ownerId={}, title={}", ownerId, request.title());
 
         ShoppingListResponse response = createShoppingListUseCase.execute(ownerId, request);
 
-        log.info("Lista criada com sucesso: listId={}, ownerId={}", response.getId(), ownerId);
+        log.info("Lista criada com sucesso: listId={}, ownerId={}", response.id(), ownerId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -93,7 +93,7 @@ public class ShoppingListController {
         ShoppingListResponse response = getShoppingListByIdUseCase.execute(ownerId, id);
 
         log.info("Lista retornada com sucesso: listId={}, ownerId={}, itemsCount={}",
-                id, ownerId, response.getItemsCount());
+                id, ownerId, response.itemsCount());
         return ResponseEntity.ok(response);
     }
 

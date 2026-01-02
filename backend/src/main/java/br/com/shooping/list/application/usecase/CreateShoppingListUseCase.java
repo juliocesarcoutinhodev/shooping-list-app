@@ -34,13 +34,13 @@ public class CreateShoppingListUseCase {
      */
     @Transactional
     public ShoppingListResponse execute(Long ownerId, CreateShoppingListRequest request) {
-        log.info("Criando lista de compras: ownerId={}, title={}", ownerId, request.getTitle());
+        log.info("Criando lista de compras: ownerId={}, title={}", ownerId, request.title());
 
         // Delegar criação ao domínio (validações de negócio aplicadas)
         ShoppingList shoppingList = ShoppingList.create(
                 ownerId,
-                request.getTitle(),
-                request.getDescription()
+                request.title(),
+                request.description()
         );
 
         // Persistir
@@ -55,17 +55,18 @@ public class CreateShoppingListUseCase {
      * Mapeia entidade de domínio para DTO de resposta.
      */
     private ShoppingListResponse mapToResponse(ShoppingList list) {
-        return ShoppingListResponse.builder()
-                .id(list.getId())
-                .ownerId(list.getOwnerId())
-                .title(list.getTitle())
-                .description(list.getDescription())
-                .itemsCount(list.countTotalItems())
-                .pendingItemsCount(list.countPendingItems())
-                .purchasedItemsCount(list.countPurchasedItems())
-                .createdAt(list.getCreatedAt())
-                .updatedAt(list.getUpdatedAt())
-                .build();
+        return new ShoppingListResponse(
+                list.getId(),
+                list.getOwnerId(),
+                list.getTitle(),
+                list.getDescription(),
+                null, // items não preenchidos neste endpoint
+                list.countTotalItems(),
+                list.countPendingItems(),
+                list.countPurchasedItems(),
+                list.getCreatedAt(),
+                list.getUpdatedAt()
+        );
     }
 }
 

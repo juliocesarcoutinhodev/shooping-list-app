@@ -58,15 +58,15 @@ class CreateShoppingListUseCaseTest {
 
         // Assert
         assertThat(response).isNotNull();
-        assertThat(response.getId()).isEqualTo(1L);
-        assertThat(response.getOwnerId()).isEqualTo(ownerId);
-        assertThat(response.getTitle()).isEqualTo(validRequest.getTitle());
-        assertThat(response.getDescription()).isEqualTo(validRequest.getDescription());
-        assertThat(response.getItemsCount()).isZero();
-        assertThat(response.getPendingItemsCount()).isZero();
-        assertThat(response.getPurchasedItemsCount()).isZero();
-        assertThat(response.getCreatedAt()).isNotNull();
-        assertThat(response.getUpdatedAt()).isNotNull();
+        assertThat(response.id()).isEqualTo(1L);
+        assertThat(response.ownerId()).isEqualTo(ownerId);
+        assertThat(response.title()).isEqualTo(validRequest.title());
+        assertThat(response.description()).isEqualTo(validRequest.description());
+        assertThat(response.itemsCount()).isZero();
+        assertThat(response.pendingItemsCount()).isZero();
+        assertThat(response.purchasedItemsCount()).isZero();
+        assertThat(response.createdAt()).isNotNull();
+        assertThat(response.updatedAt()).isNotNull();
 
         // Verify
         verify(shoppingListRepository).save(any(ShoppingList.class));
@@ -92,8 +92,8 @@ class CreateShoppingListUseCaseTest {
 
         // Assert
         assertThat(response).isNotNull();
-        assertThat(response.getTitle()).isEqualTo("Lista Rápida");
-        assertThat(response.getDescription()).isNull();
+        assertThat(response.title()).isEqualTo("Lista Rápida");
+        assertThat(response.description()).isNull();
     }
 
     @Test
@@ -115,8 +115,8 @@ class CreateShoppingListUseCaseTest {
 
         ShoppingList savedList = listCaptor.getValue();
         assertThat(savedList.getOwnerId()).isEqualTo(ownerId);
-        assertThat(savedList.getTitle()).isEqualTo(validRequest.getTitle());
-        assertThat(savedList.getDescription()).isEqualTo(validRequest.getDescription());
+        assertThat(savedList.getTitle()).isEqualTo(validRequest.title());
+        assertThat(savedList.getDescription()).isEqualTo(validRequest.description());
     }
 
     /**

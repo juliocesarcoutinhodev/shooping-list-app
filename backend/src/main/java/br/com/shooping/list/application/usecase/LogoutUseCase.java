@@ -35,7 +35,7 @@ public class LogoutUseCase {
         log.info("Tentativa de logout");
 
         // 1. Fazer hash do token recebido
-        String tokenHash = TokenHashUtil.hashToken(request.getRefreshToken());
+        String tokenHash = TokenHashUtil.hashToken(request.refreshToken());
 
         // 2. Buscar token no banco pelo hash
         RefreshToken currentToken = refreshTokenRepository.findByTokenHash(tokenHash)

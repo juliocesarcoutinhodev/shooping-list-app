@@ -62,8 +62,8 @@ class UpdateItemUseCaseTest {
         ItemResponse response = updateItemUseCase.execute(ownerId, listId, itemId, request);
 
         // Assert
-        assertThat(response.getName()).isEqualTo("Feijão");
-        assertThat(response.getQuantity()).isEqualByComparingTo(BigDecimal.ONE);
+        assertThat(response.name()).isEqualTo("Feijão");
+        assertThat(response.quantity()).isEqualByComparingTo(BigDecimal.ONE);
         verify(shoppingListRepository).save(existingList);
     }
 
@@ -79,8 +79,8 @@ class UpdateItemUseCaseTest {
         ItemResponse response = updateItemUseCase.execute(ownerId, listId, itemId, request);
 
         // Assert
-        assertThat(response.getQuantity()).isEqualByComparingTo(new BigDecimal("5"));
-        assertThat(response.getName()).isEqualTo("Arroz");
+        assertThat(response.quantity()).isEqualByComparingTo(new BigDecimal("5"));
+        assertThat(response.name()).isEqualTo("Arroz");
         verify(shoppingListRepository).save(existingList);
     }
 
@@ -96,7 +96,7 @@ class UpdateItemUseCaseTest {
         ItemResponse response = updateItemUseCase.execute(ownerId, listId, itemId, request);
 
         // Assert
-        assertThat(response.getStatus()).isEqualTo("PURCHASED");
+        assertThat(response.status()).isEqualTo("PURCHASED");
         verify(shoppingListRepository).save(existingList);
     }
 
@@ -112,10 +112,10 @@ class UpdateItemUseCaseTest {
         ItemResponse response = updateItemUseCase.execute(ownerId, listId, itemId, request);
 
         // Assert
-        assertThat(response.getName()).isEqualTo("Feijão Preto");
-        assertThat(response.getQuantity()).isEqualByComparingTo(new BigDecimal("2"));
-        assertThat(response.getUnit()).isEqualTo("pacote");
-        assertThat(response.getStatus()).isEqualTo("PURCHASED");
+        assertThat(response.name()).isEqualTo("Feijão Preto");
+        assertThat(response.quantity()).isEqualByComparingTo(new BigDecimal("2"));
+        assertThat(response.unit()).isEqualTo("pacote");
+        assertThat(response.status()).isEqualTo("PURCHASED");
         verify(shoppingListRepository).save(existingList);
     }
 

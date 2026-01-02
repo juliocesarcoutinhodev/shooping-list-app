@@ -50,14 +50,14 @@ public class GetMyShoppingListsUseCase {
      * Mapeia entidade de domínio para DTO de resumo.
      */
     private ShoppingListSummaryResponse mapToSummaryResponse(ShoppingList list) {
-        return ShoppingListSummaryResponse.builder()
-                .id(list.getId())
-                .title(list.getTitle())
-                .itemsCount(list.countTotalItems())
-                .pendingItemsCount(list.countPendingItems())
-                .createdAt(list.getCreatedAt())
-                .updatedAt(list.getUpdatedAt())
-                .build();
+        return new ShoppingListSummaryResponse(
+                list.getId(),
+                list.getTitle(),
+                list.countTotalItems(),
+                list.countPendingItems(),
+                list.getCreatedAt(),
+                list.getUpdatedAt()
+        );
     }
 }
 

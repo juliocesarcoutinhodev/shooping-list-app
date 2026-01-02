@@ -2,9 +2,6 @@ package br.com.shooping.list.application.dto.shoppinglist;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
@@ -15,25 +12,21 @@ import java.math.BigDecimal;
  * Atualização parcial: cliente envia apenas os campos que deseja alterar.
  * Pelo menos um campo deve ser fornecido.
  */
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class UpdateItemRequest {
+public record UpdateItemRequest(
+        @Size(min = 3, max = 100, message = "Nome do item deve ter entre 3 e 100 caracteres")
+        String name,
 
-    @Size(min = 3, max = 100, message = "Nome do item deve ter entre 3 e 100 caracteres")
-    private String name;
+        @DecimalMin(value = "0.01", message = "Quantidade deve ser maior que zero")
+        BigDecimal quantity,
 
-    @DecimalMin(value = "0.01", message = "Quantidade deve ser maior que zero")
-    private BigDecimal quantity;
+        @Size(max = 20, message = "Unidade não pode ter mais de 20 caracteres")
+        String unit,
 
-    @Size(max = 20, message = "Unidade não pode ter mais de 20 caracteres")
-    private String unit;
+        @DecimalMin(value = "0.0", message = "Preço unitário não pode ser negativo")
+        BigDecimal unitPrice,
 
-    @DecimalMin(value = "0.0", message = "Preço unitário não pode ser negativo")
-    private BigDecimal unitPrice;
-
-    private String status; // PENDING ou PURCHASED
-
+        String status // PENDING ou PURCHASED
+) {
     /**
      * Valida se pelo menos um campo foi fornecido para atualização.
      *
@@ -41,10 +34,10 @@ public class UpdateItemRequest {
      */
     public boolean hasAtLeastOneField() {
         return (name != null && !name.isBlank())
-            || quantity != null
-            || unit != null
-            || unitPrice != null
-            || status != null;
+                || quantity != null
+                || unit != null
+                || unitPrice != null
+                || status != null;
     }
 
     /**

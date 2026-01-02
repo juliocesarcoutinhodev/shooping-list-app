@@ -42,7 +42,7 @@ public class AddItemToListUseCase {
     @Transactional
     public ItemResponse execute(Long ownerId, Long listId, AddItemRequest request) {
         log.info("Adicionando item na lista: listId={}, ownerId={}, itemName={}",
-                listId, ownerId, request.getName());
+                listId, ownerId, request.name());
 
         // Buscar lista
         ShoppingList list = shoppingListRepository.findById(listId)
@@ -59,9 +59,9 @@ public class AddItemToListUseCase {
         }
 
         // Delegar criação ao domínio (valida duplicatas e limite)
-        ItemName itemName = ItemName.of(request.getName());
-        Quantity quantity = Quantity.of(request.getQuantity());
-        ListItem item = list.addItem(itemName, quantity, request.getUnit(), request.getUnitPrice());
+        ItemName itemName = ItemName.of(request.name());
+        Quantity quantity = Quantity.of(request.quantity());
+        ListItem item = list.addItem(itemName, quantity, request.unit(), request.unitPrice());
 
         // Persistir alterações (flush para gerar IDs)
         ShoppingList savedList = shoppingListRepository.save(list);
@@ -73,19 +73,19 @@ public class AddItemToListUseCase {
                 .orElse(item);
 
         log.info("Item adicionado com sucesso: listId={}, itemId={}, itemName={}",
-                listId, savedItem.getId(), request.getName());
+                listId, savedItem.getId(), request.name());
 
         // Mapear para resposta
-        return ItemResponse.builder()
-                .id(savedItem.getId())
-                .name(savedItem.getName().getValue())
-                .quantity(savedItem.getQuantity())
-                .unit(savedItem.getUnit())
-                .unitPrice(savedItem.getUnitPrice())
-                .status(savedItem.getStatus().name())
-                .createdAt(savedItem.getCreatedAt())
-                .updatedAt(savedItem.getUpdatedAt())
-                .build();
+        return new ItemResponse(
+                savedItem.getId(),
+                savedItem.getName().getValue(),
+                savedItem.getQuantity(),
+                savedItem.getUnit(),
+                savedItem.getUnitPrice(),
+                savedItem.getStatus().name(),
+                savedItem.getCreatedAt(),
+                savedItem.getUpdatedAt()
+        );
     }
 }
 

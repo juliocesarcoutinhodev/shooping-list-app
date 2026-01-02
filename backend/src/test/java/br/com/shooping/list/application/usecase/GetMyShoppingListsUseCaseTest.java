@@ -74,20 +74,20 @@ class GetMyShoppingListsUseCaseTest {
         assertThat(response).hasSize(3);
 
         ShoppingListSummaryResponse response1 = response.get(0);
-        assertThat(response1.getId()).isEqualTo(1L);
-        assertThat(response1.getTitle()).isEqualTo("Lista 1");
-        assertThat(response1.getItemsCount()).isZero();
-        assertThat(response1.getPendingItemsCount()).isZero();
-        assertThat(response1.getCreatedAt()).isNotNull();
-        assertThat(response1.getUpdatedAt()).isNotNull();
+        assertThat(response1.id()).isEqualTo(1L);
+        assertThat(response1.title()).isEqualTo("Lista 1");
+        assertThat(response1.itemsCount()).isZero();
+        assertThat(response1.pendingItemsCount()).isZero();
+        assertThat(response1.createdAt()).isNotNull();
+        assertThat(response1.updatedAt()).isNotNull();
 
         ShoppingListSummaryResponse response2 = response.get(1);
-        assertThat(response2.getId()).isEqualTo(2L);
-        assertThat(response2.getTitle()).isEqualTo("Lista 2");
+        assertThat(response2.id()).isEqualTo(2L);
+        assertThat(response2.title()).isEqualTo("Lista 2");
 
         ShoppingListSummaryResponse response3 = response.get(2);
-        assertThat(response3.getId()).isEqualTo(3L);
-        assertThat(response3.getTitle()).isEqualTo("Lista 3");
+        assertThat(response3.id()).isEqualTo(3L);
+        assertThat(response3.title()).isEqualTo("Lista 3");
 
         verify(shoppingListRepository).findByOwnerId(ownerId);
     }
@@ -107,8 +107,8 @@ class GetMyShoppingListsUseCaseTest {
         // Assert
         assertThat(response).hasSize(1);
         ShoppingListSummaryResponse summary = response.get(0);
-        assertThat(summary.getItemsCount()).isEqualTo(list.countTotalItems());
-        assertThat(summary.getPendingItemsCount()).isEqualTo(list.countPendingItems());
+        assertThat(summary.itemsCount()).isEqualTo(list.countTotalItems());
+        assertThat(summary.pendingItemsCount()).isEqualTo(list.countPendingItems());
     }
 
     /**

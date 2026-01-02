@@ -66,14 +66,14 @@ public class UpdateShoppingListUseCase {
         }
 
         // Aplicar atualizações condicionalmente
-        if (request.getTitle() != null && !request.getTitle().isBlank()) {
-            log.debug("Atualizando título: listId={}, novoTitulo={}", listId, request.getTitle());
-            list.updateTitle(request.getTitle());
+        if (request.title() != null && !request.title().isBlank()) {
+            log.debug("Atualizando título: listId={}, novoTitulo={}", listId, request.title());
+            list.updateTitle(request.title());
         }
 
-        if (request.getDescription() != null) {
+        if (request.description() != null) {
             log.debug("Atualizando descrição: listId={}", listId);
-            list.updateDescription(request.getDescription());
+            list.updateDescription(request.description());
         }
 
         // Persistir alterações

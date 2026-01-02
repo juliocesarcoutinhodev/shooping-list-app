@@ -73,34 +73,34 @@ public class GetShoppingListByIdUseCase {
                 .map(this::mapItemToResponse)
                 .collect(Collectors.toList());
 
-        return ShoppingListResponse.builder()
-                .id(list.getId())
-                .ownerId(list.getOwnerId())
-                .title(list.getTitle())
-                .description(list.getDescription())
-                .items(items)
-                .itemsCount(list.countTotalItems())
-                .pendingItemsCount(list.countPendingItems())
-                .purchasedItemsCount(list.countPurchasedItems())
-                .createdAt(list.getCreatedAt())
-                .updatedAt(list.getUpdatedAt())
-                .build();
+        return new ShoppingListResponse(
+                list.getId(),
+                list.getOwnerId(),
+                list.getTitle(),
+                list.getDescription(),
+                items,
+                list.countTotalItems(),
+                list.countPendingItems(),
+                list.countPurchasedItems(),
+                list.getCreatedAt(),
+                list.getUpdatedAt()
+        );
     }
 
     /**
      * Mapeia um item de domínio para DTO de resposta.
      */
     private ItemResponse mapItemToResponse(ListItem item) {
-        return ItemResponse.builder()
-                .id(item.getId())
-                .name(item.getName().getValue())
-                .quantity(item.getQuantity())
-                .unit(item.getUnit())
-                .unitPrice(item.getUnitPrice())
-                .status(item.getStatus().name())
-                .createdAt(item.getCreatedAt())
-                .updatedAt(item.getUpdatedAt())
-                .build();
+        return new ItemResponse(
+                item.getId(),
+                item.getName().getValue(),
+                item.getQuantity(),
+                item.getUnit(),
+                item.getUnitPrice(),
+                item.getStatus().name(),
+                item.getCreatedAt(),
+                item.getUpdatedAt()
+        );
     }
 }
 

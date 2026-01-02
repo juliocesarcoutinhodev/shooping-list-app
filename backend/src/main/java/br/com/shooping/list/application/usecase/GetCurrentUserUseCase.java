@@ -39,15 +39,15 @@ public class GetCurrentUserUseCase {
 
         log.debug("Usuário encontrado: email={}, provider={}", user.getEmail(), user.getProvider());
 
-        return UserMeResponse.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .provider(user.getProvider())
-                .status(user.getStatus())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .build();
+        return new UserMeResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getProvider(),
+                user.getStatus(),
+                user.getCreatedAt(),
+                user.getUpdatedAt()
+        );
     }
 }
 

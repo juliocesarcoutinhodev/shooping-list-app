@@ -62,10 +62,10 @@ class AddItemToListUseCaseTest {
 
         // Assert
         assertThat(response).isNotNull();
-        assertThat(response.getName()).isEqualTo("Arroz Integral");
-        assertThat(response.getQuantity()).isEqualByComparingTo(new BigDecimal("2.0"));
-        assertThat(response.getUnit()).isEqualTo("kg");
-        assertThat(response.getStatus()).isEqualTo("PENDING");
+        assertThat(response.name()).isEqualTo("Arroz Integral");
+        assertThat(response.quantity()).isEqualByComparingTo(new BigDecimal("2.0"));
+        assertThat(response.unit()).isEqualTo("kg");
+        assertThat(response.status()).isEqualTo("PENDING");
 
         verify(shoppingListRepository).findById(listId);
         verify(shoppingListRepository).save(existingList);
@@ -131,8 +131,8 @@ class AddItemToListUseCaseTest {
         ItemResponse response = addItemToListUseCase.execute(ownerId, listId, requestWithoutUnit);
 
         // Assert
-        assertThat(response.getName()).isEqualTo("Banana");
-        assertThat(response.getUnit()).isNull();
+        assertThat(response.name()).isEqualTo("Banana");
+        assertThat(response.unit()).isNull();
         verify(shoppingListRepository).save(existingList);
     }
 

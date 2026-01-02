@@ -43,24 +43,24 @@ public class LoginUserUseCase {
 
     @Transactional
     public LoginResponse execute(LoginRequest request, String userAgent, String ip) {
-        log.info("Tentativa de login para email={}", request.getEmail());
+        log.info("Tentativa de login para email={}", request.email());
 
         // Buscar usuário por email
-        var user = userRepository.findByEmail(request.getEmail())
+        var user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> {
-                    log.warn("Login falhou: usuário não encontrado para email={}", request.getEmail());
+                    log.warn("Login falhou: usuário não encontrado para email={}", request.email());
                     return new InvalidCredentialsException("Email ou senha não conferem");
                 });
 
         // Validar senha
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            log.warn("Login falhou: senha incorreta para email={}", request.getEmail());
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            log.warn("Login falhou: senha incorreta para email={}", request.email());
             throw new InvalidCredentialsException("Email ou senha não conferem");
         }
 
         // Validar status ACTIVE
         if (user.getStatus() != UserStatus.ACTIVE) {
-            log.warn("Login falhou: usuário inativo para email={}", request.getEmail());
+            log.warn("Login falhou: usuário inativo para email={}", request.email());
             throw new InvalidCredentialsException("Usuário inativo");
         }
 
@@ -93,11 +93,11 @@ public class LoginUserUseCase {
         log.info("Refresh token criado para userId={}, expiresAt={}", user.getId(), refreshTokenExpiration);
         log.info("Login realizado com sucesso para userId={}, email={}", user.getId(), user.getEmail());
 
-        return LoginResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshTokenValue)
-                .expiresIn(expiresIn)
-                .build();
+        return new LoginResponse(
+                accessToken,
+                refreshTokenValue,
+                expiresIn
+        );
     }
 }
 

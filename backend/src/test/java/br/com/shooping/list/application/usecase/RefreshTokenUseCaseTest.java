@@ -113,9 +113,9 @@ class RefreshTokenUseCaseTest {
 
         // Assert
         assertThat(response).isNotNull();
-        assertThat(response.getAccessToken()).isEqualTo("new.access.token");
-        assertThat(response.getRefreshToken()).isNotNull().isNotEmpty();
-        assertThat(response.getExpiresIn()).isEqualTo(900L); // 15 minutos
+        assertThat(response.accessToken()).isEqualTo("new.access.token");
+        assertThat(response.refreshToken()).isNotNull().isNotEmpty();
+        assertThat(response.expiresIn()).isEqualTo(900L); // 15 minutos
 
         // Verify - Deve ter revogado o token antigo
         assertThat(validRefreshToken.isRevoked()).isTrue();
@@ -139,8 +139,8 @@ class RefreshTokenUseCaseTest {
         RefreshTokenResponse response = refreshTokenUseCase.execute(validRequest, "Mozilla/5.0", "192.168.1.1");
 
         // Assert - Novo refresh token deve ser UUID válido e diferente do antigo
-        assertThat(response.getRefreshToken()).isNotEqualTo(validRequest.getRefreshToken());
-        assertThatNoException().isThrownBy(() -> java.util.UUID.fromString(response.getRefreshToken()));
+        assertThat(response.refreshToken()).isNotEqualTo(validRequest.refreshToken());
+        assertThatNoException().isThrownBy(() -> java.util.UUID.fromString(response.refreshToken()));
     }
 
     @Test
@@ -222,7 +222,7 @@ class RefreshTokenUseCaseTest {
         verify(refreshTokenRepository, times(2)).save(tokenCaptor.capture());
 
         RefreshToken newToken = tokenCaptor.getAllValues().get(0); // Primeiro save é o novo token
-        assertThat(newToken.getTokenHash()).isNotEqualTo(response.getRefreshToken()); // Hash é diferente
+        assertThat(newToken.getTokenHash()).isNotEqualTo(response.refreshToken()); // Hash é diferente
         assertThat(newToken.getUserAgent()).isEqualTo("TestBrowser/1.0");
         assertThat(newToken.getIp()).isEqualTo("203.0.113.42");
         assertThat(newToken.getExpiresAt()).isAfter(Instant.now());
@@ -270,7 +270,7 @@ class RefreshTokenUseCaseTest {
         RefreshTokenResponse response = refreshTokenUseCase.execute(validRequest, "Mozilla/5.0", "192.168.1.1");
 
         // Assert
-        assertThat(response.getExpiresIn()).isEqualTo(900L); // 15 minutos = 900 segundos
+        assertThat(response.expiresIn()).isEqualTo(900L); // 15 minutos = 900 segundos
         verify(jwtService).generateAccessToken(validUser);
     }
 }

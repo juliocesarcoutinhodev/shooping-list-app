@@ -48,11 +48,11 @@ public class ShoppingListItemController {
 
         Long ownerId = extractOwnerId();
         log.debug("Adicionando item na lista: listId={}, ownerId={}, itemName={}",
-                listId, ownerId, request.getName());
+                listId, ownerId, request.name());
 
         ItemResponse response = addItemToListUseCase.execute(ownerId, listId, request);
 
-        log.info("Item adicionado com sucesso: listId={}, itemId={}", listId, response.getId());
+        log.info("Item adicionado com sucesso: listId={}, itemId={}", listId, response.id());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

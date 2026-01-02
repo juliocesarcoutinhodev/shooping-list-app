@@ -1,8 +1,6 @@
 package br.com.shooping.list.application.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Builder;
-import lombok.Getter;
 import org.slf4j.MDC;
 
 import java.time.Instant;
@@ -16,85 +14,80 @@ import java.util.List;
  * Usado por {@link br.com.shooping.list.infrastructure.exception.GlobalExceptionHandler}
  * para retornar erros consistentes em toda a API.
  */
-@Getter
-@Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ErrorResponse {
+public record ErrorResponse(
+        /**
+         * Timestamp do erro (ISO-8601).
+         */
+        Instant timestamp,
 
-    /**
-     * Timestamp do erro (ISO-8601).
-     */
-    private final Instant timestamp;
+        /**
+         * Código HTTP do erro (400, 401, 404, 500, etc).
+         */
+        int status,
 
-    /**
-     * Código HTTP do erro (400, 401, 404, 500, etc).
-     */
-    private final int status;
+        /**
+         * Nome do erro (Bad Request, Unauthorized, Not Found, etc).
+         */
+        String error,
 
-    /**
-     * Nome do erro (Bad Request, Unauthorized, Not Found, etc).
-     */
-    private final String error;
+        /**
+         * Mensagem descritiva do erro.
+         */
+        String message,
 
-    /**
-     * Mensagem descritiva do erro.
-     */
-    private final String message;
+        /**
+         * Path da requisição que gerou o erro.
+         */
+        String path,
 
-    /**
-     * Path da requisição que gerou o erro.
-     */
-    private final String path;
+        /**
+         * Detalhes adicionais do erro (opcional).
+         * Útil para erros de validação com múltiplos campos.
+         */
+        List<ValidationError> details,
 
-    /**
-     * Detalhes adicionais do erro (opcional).
-     * Útil para erros de validação com múltiplos campos.
-     */
-    private final List<ValidationError> details;
-
-    /**
-     * Correlation ID para rastreamento distribuído.
-     * Permite correlacionar logs e requisições através de toda a stack.
-     * Útil em ambientes de produção para debugging e auditoria.
-     */
-    private final String correlationId;
-
+        /**
+         * Correlation ID para rastreamento distribuído.
+         * Permite correlacionar logs e requisições através de toda a stack.
+         * Útil em ambientes de produção para debugging e auditoria.
+         */
+        String correlationId
+) {
     /**
      * Representa um erro de validação de campo específico.
      */
-    @Getter
-    @Builder
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class ValidationError {
+    public record ValidationError(
+            /**
+             * Nome do campo com erro.
+             */
+            String field,
 
-        /**
-         * Nome do campo com erro.
-         */
-        private final String field;
+            /**
+             * Mensagem de erro do campo.
+             */
+            String message,
 
-        /**
-         * Mensagem de erro do campo.
-         */
-        private final String message;
-
-        /**
-         * Valor rejeitado (opcional).
-         */
-        private final Object rejectedValue;
-    }
+            /**
+             * Valor rejeitado (opcional).
+             */
+            Object rejectedValue
+    ) {}
 
     /**
      * Factory method para criar erro simples sem detalhes.
      */
     public static ErrorResponse of(int status, String error, String message, String path) {
-        return ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(status)
-                .error(error)
-                .message(message)
-                .path(path)
-                .correlationId(MDC.get("correlationId"))
-                .build();
+        return new ErrorResponse(
+                Instant.now(),
+                status,
+                error,
+                message,
+                path,
+                null,
+                MDC.get("correlationId")
+        );
     }
 
     /**
@@ -107,15 +100,15 @@ public class ErrorResponse {
             String path,
             List<ValidationError> details
     ) {
-        return ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(status)
-                .error(error)
-                .message(message)
-                .path(path)
-                .details(details)
-                .correlationId(MDC.get("correlationId"))
-                .build();
+        return new ErrorResponse(
+                Instant.now(),
+                status,
+                error,
+                message,
+                path,
+                details,
+                MDC.get("correlationId")
+        );
     }
 }
 
