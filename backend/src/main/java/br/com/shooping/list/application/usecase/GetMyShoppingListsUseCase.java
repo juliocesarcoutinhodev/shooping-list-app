@@ -1,6 +1,7 @@
 package br.com.shooping.list.application.usecase;
 
 import br.com.shooping.list.application.dto.shoppinglist.ShoppingListSummaryResponse;
+import br.com.shooping.list.application.mapper.ShoppingListMapper;
 import br.com.shooping.list.domain.shoppinglist.ShoppingList;
 import br.com.shooping.list.domain.shoppinglist.ShoppingListRepository;
 import lombok.RequiredArgsConstructor;
@@ -9,14 +10,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Caso de uso para buscar todas as listas de compras do usuário autenticado.
  *
  * Responsabilidades:
  * - Buscar listas do usuário via repositório
- * - Mapear para DTOs de resposta
+ * - Mapear para DTOs de resumo via ShoppingListMapper (MapStruct)
  * - Retornar lista ordenada
  */
 @Service
@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 public class GetMyShoppingListsUseCase {
 
     private final ShoppingListRepository shoppingListRepository;
+    private final ShoppingListMapper mapper;
 
     /**
      * Busca todas as listas de compras do usuário autenticado.
@@ -40,24 +41,8 @@ public class GetMyShoppingListsUseCase {
         List<ShoppingList> lists = shoppingListRepository.findByOwnerId(ownerId);
         log.debug("Encontradas {} listas para o usuário: ownerId={}", lists.size(), ownerId);
 
-        // Mapear para DTOs
-        return lists.stream()
-                .map(this::mapToSummaryResponse)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Mapeia entidade de domínio para DTO de resumo.
-     */
-    private ShoppingListSummaryResponse mapToSummaryResponse(ShoppingList list) {
-        return new ShoppingListSummaryResponse(
-                list.getId(),
-                list.getTitle(),
-                list.countTotalItems(),
-                list.countPendingItems(),
-                list.getCreatedAt(),
-                list.getUpdatedAt()
-        );
+        // Mapear para DTOs via MapStruct
+        return mapper.toSummaryResponseList(lists);
     }
 }
 

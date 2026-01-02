@@ -2,6 +2,7 @@ package br.com.shooping.list.application.usecase;
 
 import br.com.shooping.list.application.dto.shoppinglist.ItemResponse;
 import br.com.shooping.list.application.dto.shoppinglist.UpdateItemRequest;
+import br.com.shooping.list.application.mapper.ShoppingListMapper;
 import br.com.shooping.list.domain.shoppinglist.*;
 import br.com.shooping.list.infrastructure.exception.ShoppingListNotFoundException;
 import br.com.shooping.list.infrastructure.exception.UnauthorizedShoppingListAccessException;
@@ -28,6 +29,9 @@ class UpdateItemUseCaseTest {
     @Mock
     private ShoppingListRepository shoppingListRepository;
 
+    @Mock
+    private ShoppingListMapper shoppingListMapper;
+
     @InjectMocks
     private UpdateItemUseCase updateItemUseCase;
 
@@ -48,6 +52,21 @@ class UpdateItemUseCaseTest {
 
         existingItem = existingList.addItem(ItemName.of("Arroz"), Quantity.of(BigDecimal.ONE), "kg", null);
         setField(existingItem, "id", itemId);
+
+        // Mock padrão do mapper (lenient para testes que não chegam a chamar o mapper)
+        lenient().when(shoppingListMapper.toItemResponse(any(ListItem.class))).thenAnswer(invocation -> {
+            ListItem item = invocation.getArgument(0);
+            return new ItemResponse(
+                    item.getId(),
+                    item.getName().getValue(),
+                    item.getQuantity(),
+                    item.getUnit(),
+                    item.getUnitPrice(),
+                    item.getStatus().name(),
+                    item.getCreatedAt(),
+                    item.getUpdatedAt()
+            );
+        });
     }
 
     @Test

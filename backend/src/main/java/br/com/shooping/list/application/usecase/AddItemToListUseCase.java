@@ -2,6 +2,7 @@ package br.com.shooping.list.application.usecase;
 
 import br.com.shooping.list.application.dto.shoppinglist.AddItemRequest;
 import br.com.shooping.list.application.dto.shoppinglist.ItemResponse;
+import br.com.shooping.list.application.mapper.ShoppingListMapper;
 import br.com.shooping.list.domain.shoppinglist.*;
 import br.com.shooping.list.infrastructure.exception.ShoppingListNotFoundException;
 import br.com.shooping.list.infrastructure.exception.UnauthorizedShoppingListAccessException;
@@ -18,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
  * - Validar ownership (apenas dono pode adicionar itens)
  * - Delegar criação ao domínio (ShoppingList.addItem)
  * - Persistir alterações
- * - Retornar item criado
+ * - Mapear resposta via ShoppingListMapper (MapStruct)
  */
 @Service
 @RequiredArgsConstructor
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AddItemToListUseCase {
 
     private final ShoppingListRepository shoppingListRepository;
+    private final ShoppingListMapper mapper;
 
     /**
      * Adiciona um novo item em uma lista de compras.
@@ -75,17 +77,8 @@ public class AddItemToListUseCase {
         log.info("Item adicionado com sucesso: listId={}, itemId={}, itemName={}",
                 listId, savedItem.getId(), request.name());
 
-        // Mapear para resposta
-        return new ItemResponse(
-                savedItem.getId(),
-                savedItem.getName().getValue(),
-                savedItem.getQuantity(),
-                savedItem.getUnit(),
-                savedItem.getUnitPrice(),
-                savedItem.getStatus().name(),
-                savedItem.getCreatedAt(),
-                savedItem.getUpdatedAt()
-        );
+        // Mapear para resposta via MapStruct
+        return mapper.toItemResponse(savedItem);
     }
 }
 

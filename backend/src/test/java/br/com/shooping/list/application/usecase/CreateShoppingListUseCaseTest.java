@@ -2,6 +2,7 @@ package br.com.shooping.list.application.usecase;
 
 import br.com.shooping.list.application.dto.shoppinglist.CreateShoppingListRequest;
 import br.com.shooping.list.application.dto.shoppinglist.ShoppingListResponse;
+import br.com.shooping.list.application.mapper.ShoppingListMapper;
 import br.com.shooping.list.domain.shoppinglist.ShoppingList;
 import br.com.shooping.list.domain.shoppinglist.ShoppingListRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +29,9 @@ class CreateShoppingListUseCaseTest {
     @Mock
     private ShoppingListRepository shoppingListRepository;
 
+    @Mock
+    private ShoppingListMapper mapper;
+
     @InjectMocks
     private CreateShoppingListUseCase createShoppingListUseCase;
 
@@ -53,6 +57,22 @@ class CreateShoppingListUseCaseTest {
             return list;
         });
 
+        when(mapper.toResponseWithoutItems(any(ShoppingList.class))).thenAnswer(invocation -> {
+            ShoppingList list = invocation.getArgument(0);
+            return new ShoppingListResponse(
+                    list.getId(),
+                    list.getOwnerId(),
+                    list.getTitle(),
+                    list.getDescription(),
+                    null, // items
+                    list.countTotalItems(),
+                    list.countPendingItems(),
+                    list.countPurchasedItems(),
+                    list.getCreatedAt(),
+                    list.getUpdatedAt()
+            );
+        });
+
         // Act
         ShoppingListResponse response = createShoppingListUseCase.execute(ownerId, validRequest);
 
@@ -70,6 +90,7 @@ class CreateShoppingListUseCaseTest {
 
         // Verify
         verify(shoppingListRepository).save(any(ShoppingList.class));
+        verify(mapper).toResponseWithoutItems(any(ShoppingList.class));
     }
 
     @Test
@@ -85,6 +106,22 @@ class CreateShoppingListUseCaseTest {
             ShoppingList list = invocation.getArgument(0);
             setField(list, "id", 2L);
             return list;
+        });
+
+        when(mapper.toResponseWithoutItems(any(ShoppingList.class))).thenAnswer(invocation -> {
+            ShoppingList list = invocation.getArgument(0);
+            return new ShoppingListResponse(
+                    list.getId(),
+                    list.getOwnerId(),
+                    list.getTitle(),
+                    list.getDescription(),
+                    null, // items
+                    list.countTotalItems(),
+                    list.countPendingItems(),
+                    list.countPurchasedItems(),
+                    list.getCreatedAt(),
+                    list.getUpdatedAt()
+            );
         });
 
         // Act
@@ -104,6 +141,22 @@ class CreateShoppingListUseCaseTest {
             ShoppingList list = invocation.getArgument(0);
             setField(list, "id", 3L);
             return list;
+        });
+
+        when(mapper.toResponseWithoutItems(any(ShoppingList.class))).thenAnswer(invocation -> {
+            ShoppingList list = invocation.getArgument(0);
+            return new ShoppingListResponse(
+                    list.getId(),
+                    list.getOwnerId(),
+                    list.getTitle(),
+                    list.getDescription(),
+                    null, // items
+                    list.countTotalItems(),
+                    list.countPendingItems(),
+                    list.countPurchasedItems(),
+                    list.getCreatedAt(),
+                    list.getUpdatedAt()
+            );
         });
 
         // Act

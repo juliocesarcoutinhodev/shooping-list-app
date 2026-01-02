@@ -2,6 +2,7 @@ package br.com.shooping.list.application.usecase;
 
 import br.com.shooping.list.application.dto.shoppinglist.ShoppingListResponse;
 import br.com.shooping.list.application.dto.shoppinglist.UpdateShoppingListRequest;
+import br.com.shooping.list.application.mapper.ShoppingListMapper;
 import br.com.shooping.list.domain.shoppinglist.ShoppingList;
 import br.com.shooping.list.domain.shoppinglist.ShoppingListRepository;
 import br.com.shooping.list.infrastructure.exception.ShoppingListNotFoundException;
@@ -20,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
  * - Validar que pelo menos um campo foi fornecido
  * - Delegar atualização ao domínio (ShoppingList.updateTitle/updateDescription)
  * - Persistir alterações
- * - Retornar resposta atualizada
+ * - Mapear resposta via ShoppingListMapper (MapStruct)
  */
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateShoppingListUseCase {
 
     private final ShoppingListRepository shoppingListRepository;
+    private final ShoppingListMapper mapper;
 
     /**
      * Atualiza uma lista de compras do usuário autenticado.
@@ -81,19 +83,8 @@ public class UpdateShoppingListUseCase {
 
         log.info("Lista atualizada com sucesso: listId={}, ownerId={}", listId, ownerId);
 
-        // Mapear para resposta (items null pois não é necessário neste endpoint)
-        return new ShoppingListResponse(
-                updatedList.getId(),
-                updatedList.getOwnerId(),
-                updatedList.getTitle(),
-                updatedList.getDescription(),
-                null,
-                updatedList.getItems().size(),
-                updatedList.countPendingItems(),
-                updatedList.countPurchasedItems(),
-                updatedList.getCreatedAt(),
-                updatedList.getUpdatedAt()
-        );
+        // Mapear para resposta via MapStruct (sem itens)
+        return mapper.toResponseWithoutItems(updatedList);
     }
 }
 

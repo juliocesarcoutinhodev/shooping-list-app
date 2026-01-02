@@ -2,6 +2,7 @@ package br.com.shooping.list.application.usecase;
 
 import br.com.shooping.list.application.dto.auth.RegisterRequest;
 import br.com.shooping.list.application.dto.auth.RegisterResponse;
+import br.com.shooping.list.application.mapper.UserMapper;
 import br.com.shooping.list.domain.user.AuthProvider;
 import br.com.shooping.list.domain.user.Role;
 import br.com.shooping.list.domain.user.RoleRepository;
@@ -42,6 +43,9 @@ class RegisterUserUseCaseTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private UserMapper userMapper;
+
     @InjectMocks
     private RegisterUserUseCase registerUserUseCase;
 
@@ -60,6 +64,19 @@ class RegisterUserUseCaseTest {
         userRole = Role.create("USER", "Usuário padrão");
         var idField = getFieldAndSetAccessible(Role.class, "id");
         setField(idField, userRole, 1L);
+
+        // Configurar mock padrão do mapper (lenient para testes que não chegam a chamar o mapper)
+        lenient().when(userMapper.toRegisterResponse(any(User.class))).thenAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            return new RegisterResponse(
+                    user.getId(),
+                    user.getEmail(),
+                    user.getName(),
+                    user.getProvider(),
+                    user.getStatus(),
+                    user.getCreatedAt()
+            );
+        });
     }
 
     private java.lang.reflect.Field getFieldAndSetAccessible(Class<?> clazz, String fieldName) {

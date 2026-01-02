@@ -1,8 +1,7 @@
 package br.com.shooping.list.application.usecase;
 
-import br.com.shooping.list.application.dto.shoppinglist.ItemResponse;
 import br.com.shooping.list.application.dto.shoppinglist.ShoppingListResponse;
-import br.com.shooping.list.domain.shoppinglist.ListItem;
+import br.com.shooping.list.application.mapper.ShoppingListMapper;
 import br.com.shooping.list.domain.shoppinglist.ShoppingList;
 import br.com.shooping.list.domain.shoppinglist.ShoppingListRepository;
 import br.com.shooping.list.infrastructure.exception.ShoppingListNotFoundException;
@@ -12,16 +11,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 /**
  * Caso de uso para buscar detalhes de uma lista de compras por ID.
  *
  * Responsabilidades:
  * - Buscar lista por ID
  * - Validar ownership (apenas dono pode ver)
- * - Mapear para DTO de resposta incluindo todos os itens
+ * - Mapear para DTO de resposta via ShoppingListMapper (MapStruct) incluindo todos os itens
  * - Retornar resposta completa
  */
 @Service
@@ -30,6 +26,7 @@ import java.util.stream.Collectors;
 public class GetShoppingListByIdUseCase {
 
     private final ShoppingListRepository shoppingListRepository;
+    private final ShoppingListMapper mapper;
 
     /**
      * Busca uma lista de compras específica por ID com todos os itens.
@@ -60,47 +57,8 @@ public class GetShoppingListByIdUseCase {
 
         log.debug("Lista encontrada: listId={}, itemsCount={}", listId, list.getItems().size());
 
-        // Mapear para resposta incluindo itens
-        return mapToResponseWithItems(list);
-    }
-
-    /**
-     * Mapeia entidade de domínio para DTO de resposta incluindo todos os itens.
-     */
-    private ShoppingListResponse mapToResponseWithItems(ShoppingList list) {
-        // Mapear itens para ItemResponse
-        List<ItemResponse> items = list.getItems().stream()
-                .map(this::mapItemToResponse)
-                .collect(Collectors.toList());
-
-        return new ShoppingListResponse(
-                list.getId(),
-                list.getOwnerId(),
-                list.getTitle(),
-                list.getDescription(),
-                items,
-                list.countTotalItems(),
-                list.countPendingItems(),
-                list.countPurchasedItems(),
-                list.getCreatedAt(),
-                list.getUpdatedAt()
-        );
-    }
-
-    /**
-     * Mapeia um item de domínio para DTO de resposta.
-     */
-    private ItemResponse mapItemToResponse(ListItem item) {
-        return new ItemResponse(
-                item.getId(),
-                item.getName().getValue(),
-                item.getQuantity(),
-                item.getUnit(),
-                item.getUnitPrice(),
-                item.getStatus().name(),
-                item.getCreatedAt(),
-                item.getUpdatedAt()
-        );
+        // Mapear para resposta via MapStruct (incluindo itens)
+        return mapper.toResponse(list);
     }
 }
 

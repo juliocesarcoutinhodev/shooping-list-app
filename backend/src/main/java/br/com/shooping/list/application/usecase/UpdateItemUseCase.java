@@ -2,6 +2,7 @@ package br.com.shooping.list.application.usecase;
 
 import br.com.shooping.list.application.dto.shoppinglist.ItemResponse;
 import br.com.shooping.list.application.dto.shoppinglist.UpdateItemRequest;
+import br.com.shooping.list.application.mapper.ShoppingListMapper;
 import br.com.shooping.list.domain.shoppinglist.*;
 import br.com.shooping.list.infrastructure.exception.ShoppingListNotFoundException;
 import br.com.shooping.list.infrastructure.exception.UnauthorizedShoppingListAccessException;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateItemUseCase {
 
     private final ShoppingListRepository shoppingListRepository;
+    private final ShoppingListMapper mapper;
 
     /**
      * Atualiza um item de uma lista de compras.
@@ -111,17 +113,8 @@ public class UpdateItemUseCase {
 
         log.info("Item atualizado com sucesso: listId={}, itemId={}", listId, itemId);
 
-        // Mapear para resposta
-        return new ItemResponse(
-                updatedItem.getId(),
-                updatedItem.getName().getValue(),
-                updatedItem.getQuantity(),
-                updatedItem.getUnit(),
-                updatedItem.getUnitPrice(),
-                updatedItem.getStatus().name(),
-                updatedItem.getCreatedAt(),
-                updatedItem.getUpdatedAt()
-        );
+        // Mapear para resposta via MapStruct
+        return mapper.toItemResponse(updatedItem);
     }
 }
 

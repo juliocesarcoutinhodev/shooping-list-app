@@ -2,6 +2,7 @@ package br.com.shooping.list.application.usecase;
 
 import br.com.shooping.list.application.dto.shoppinglist.CreateShoppingListRequest;
 import br.com.shooping.list.application.dto.shoppinglist.ShoppingListResponse;
+import br.com.shooping.list.application.mapper.ShoppingListMapper;
 import br.com.shooping.list.domain.shoppinglist.ShoppingList;
 import br.com.shooping.list.domain.shoppinglist.ShoppingListRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
  * - Validar dados de entrada (via Jakarta Validation)
  * - Delegar criação ao domínio (ShoppingList.create)
  * - Persistir via repositório
- * - Retornar resposta mapeada
+ * - Mapear resposta via ShoppingListMapper (MapStruct)
  */
 @Service
 @RequiredArgsConstructor
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CreateShoppingListUseCase {
 
     private final ShoppingListRepository shoppingListRepository;
+    private final ShoppingListMapper mapper;
 
     /**
      * Cria uma nova lista de compras para o usuário autenticado.
@@ -47,26 +49,8 @@ public class CreateShoppingListUseCase {
         ShoppingList savedList = shoppingListRepository.save(shoppingList);
         log.info("Lista criada com sucesso: id={}, ownerId={}", savedList.getId(), savedList.getOwnerId());
 
-        // Mapear para resposta
-        return mapToResponse(savedList);
-    }
-
-    /**
-     * Mapeia entidade de domínio para DTO de resposta.
-     */
-    private ShoppingListResponse mapToResponse(ShoppingList list) {
-        return new ShoppingListResponse(
-                list.getId(),
-                list.getOwnerId(),
-                list.getTitle(),
-                list.getDescription(),
-                null, // items não preenchidos neste endpoint
-                list.countTotalItems(),
-                list.countPendingItems(),
-                list.countPurchasedItems(),
-                list.getCreatedAt(),
-                list.getUpdatedAt()
-        );
+        // Mapear para resposta via MapStruct
+        return mapper.toResponseWithoutItems(savedList);
     }
 }
 

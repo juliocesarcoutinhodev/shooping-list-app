@@ -2,6 +2,7 @@ package br.com.shooping.list.application.usecase;
 
 import br.com.shooping.list.application.dto.shoppinglist.AddItemRequest;
 import br.com.shooping.list.application.dto.shoppinglist.ItemResponse;
+import br.com.shooping.list.application.mapper.ShoppingListMapper;
 import br.com.shooping.list.domain.shoppinglist.*;
 import br.com.shooping.list.infrastructure.exception.ShoppingListNotFoundException;
 import br.com.shooping.list.infrastructure.exception.UnauthorizedShoppingListAccessException;
@@ -32,6 +33,9 @@ class AddItemToListUseCaseTest {
     @Mock
     private ShoppingListRepository shoppingListRepository;
 
+    @Mock
+    private ShoppingListMapper mapper;
+
     @InjectMocks
     private AddItemToListUseCase addItemToListUseCase;
 
@@ -56,6 +60,19 @@ class AddItemToListUseCaseTest {
         // Arrange
         when(shoppingListRepository.findById(listId)).thenReturn(Optional.of(existingList));
         when(shoppingListRepository.save(any(ShoppingList.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(mapper.toItemResponse(any(ListItem.class))).thenAnswer(invocation -> {
+            ListItem item = invocation.getArgument(0);
+            return new ItemResponse(
+                    item.getId(),
+                    item.getName().getValue(),
+                    item.getQuantity(),
+                    item.getUnit(),
+                    item.getUnitPrice(),
+                    item.getStatus().name(),
+                    item.getCreatedAt(),
+                    item.getUpdatedAt()
+            );
+        });
 
         // Act
         ItemResponse response = addItemToListUseCase.execute(ownerId, listId, validRequest);
@@ -69,6 +86,7 @@ class AddItemToListUseCaseTest {
 
         verify(shoppingListRepository).findById(listId);
         verify(shoppingListRepository).save(existingList);
+        verify(mapper).toItemResponse(any(ListItem.class));
     }
 
     @Test
@@ -126,6 +144,19 @@ class AddItemToListUseCaseTest {
         AddItemRequest requestWithoutUnit = new AddItemRequest("Banana", new BigDecimal("6"), null, BigDecimal.valueOf(30.00));
         when(shoppingListRepository.findById(listId)).thenReturn(Optional.of(existingList));
         when(shoppingListRepository.save(any(ShoppingList.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(mapper.toItemResponse(any(ListItem.class))).thenAnswer(invocation -> {
+            ListItem item = invocation.getArgument(0);
+            return new ItemResponse(
+                    item.getId(),
+                    item.getName().getValue(),
+                    item.getQuantity(),
+                    item.getUnit(),
+                    item.getUnitPrice(),
+                    item.getStatus().name(),
+                    item.getCreatedAt(),
+                    item.getUpdatedAt()
+            );
+        });
 
         // Act
         ItemResponse response = addItemToListUseCase.execute(ownerId, listId, requestWithoutUnit);
@@ -134,6 +165,7 @@ class AddItemToListUseCaseTest {
         assertThat(response.name()).isEqualTo("Banana");
         assertThat(response.unit()).isNull();
         verify(shoppingListRepository).save(existingList);
+        verify(mapper).toItemResponse(any(ListItem.class));
     }
 
     private void setField(Object target, String fieldName, Object value) {

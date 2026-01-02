@@ -1,6 +1,7 @@
 package br.com.shooping.list.application.usecase;
 
 import br.com.shooping.list.application.dto.shoppinglist.ShoppingListSummaryResponse;
+import br.com.shooping.list.application.mapper.ShoppingListMapper;
 import br.com.shooping.list.domain.shoppinglist.ShoppingList;
 import br.com.shooping.list.domain.shoppinglist.ShoppingListRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -27,6 +29,9 @@ class GetMyShoppingListsUseCaseTest {
 
     @Mock
     private ShoppingListRepository shoppingListRepository;
+
+    @Mock
+    private ShoppingListMapper mapper;
 
     @InjectMocks
     private GetMyShoppingListsUseCase getMyShoppingListsUseCase;
@@ -43,6 +48,7 @@ class GetMyShoppingListsUseCaseTest {
     void shouldReturnEmptyListWhenUserHasNoLists() {
         // Arrange
         when(shoppingListRepository.findByOwnerId(ownerId)).thenReturn(List.of());
+        when(mapper.toSummaryResponseList(List.of())).thenReturn(List.of());
 
         // Act
         List<ShoppingListSummaryResponse> response = getMyShoppingListsUseCase.execute(ownerId);
@@ -50,6 +56,7 @@ class GetMyShoppingListsUseCaseTest {
         // Assert
         assertThat(response).isEmpty();
         verify(shoppingListRepository).findByOwnerId(ownerId);
+        verify(mapper).toSummaryResponseList(List.of());
     }
 
     @Test
@@ -64,8 +71,22 @@ class GetMyShoppingListsUseCaseTest {
         setField(list2, "id", 2L);
         setField(list3, "id", 3L);
 
-        when(shoppingListRepository.findByOwnerId(ownerId))
-                .thenReturn(Arrays.asList(list1, list2, list3));
+        List<ShoppingList> lists = Arrays.asList(list1, list2, list3);
+
+        when(shoppingListRepository.findByOwnerId(ownerId)).thenReturn(lists);
+        when(mapper.toSummaryResponseList(lists)).thenAnswer(invocation -> {
+            List<ShoppingList> inputLists = invocation.getArgument(0);
+            return inputLists.stream()
+                    .map(list -> new ShoppingListSummaryResponse(
+                            list.getId(),
+                            list.getTitle(),
+                            list.countTotalItems(),
+                            list.countPendingItems(),
+                            list.getCreatedAt(),
+                            list.getUpdatedAt()
+                    ))
+                    .collect(Collectors.toList());
+        });
 
         // Act
         List<ShoppingListSummaryResponse> response = getMyShoppingListsUseCase.execute(ownerId);
@@ -90,6 +111,7 @@ class GetMyShoppingListsUseCaseTest {
         assertThat(response3.title()).isEqualTo("Lista 3");
 
         verify(shoppingListRepository).findByOwnerId(ownerId);
+        verify(mapper).toSummaryResponseList(lists);
     }
 
     @Test
@@ -100,6 +122,19 @@ class GetMyShoppingListsUseCaseTest {
         setField(list, "id", 1L);
 
         when(shoppingListRepository.findByOwnerId(ownerId)).thenReturn(List.of(list));
+        when(mapper.toSummaryResponseList(List.of(list))).thenAnswer(invocation -> {
+            List<ShoppingList> inputLists = invocation.getArgument(0);
+            return inputLists.stream()
+                    .map(l -> new ShoppingListSummaryResponse(
+                            l.getId(),
+                            l.getTitle(),
+                            l.countTotalItems(),
+                            l.countPendingItems(),
+                            l.getCreatedAt(),
+                            l.getUpdatedAt()
+                    ))
+                    .collect(Collectors.toList());
+        });
 
         // Act
         List<ShoppingListSummaryResponse> response = getMyShoppingListsUseCase.execute(ownerId);
@@ -109,6 +144,7 @@ class GetMyShoppingListsUseCaseTest {
         ShoppingListSummaryResponse summary = response.get(0);
         assertThat(summary.itemsCount()).isEqualTo(list.countTotalItems());
         assertThat(summary.pendingItemsCount()).isEqualTo(list.countPendingItems());
+        verify(mapper).toSummaryResponseList(List.of(list));
     }
 
     /**
