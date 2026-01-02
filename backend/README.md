@@ -23,6 +23,7 @@ Backend da aplicação **Shopping List**, desenvolvido com **Java LTS** e **Spri
 - **Maven**
 - **JUnit 5** + **Mockito**
 - **MapStruct 1.5.5** - Mapeamento automático Domain ↔ DTO
+- **Springdoc OpenAPI 2.3.0** - Documentação OpenAPI 3.0 com Swagger UI
 - **Lombok** (apenas para Domain Layer - entidades JPA)
 - **MySQL 9** (Desenvolvimento)
 - **H2 Database** (Testes)
@@ -52,6 +53,126 @@ Para verificar:
 java -version
 docker --version
 docker compose version
+```
+
+---
+
+## 📚 Documentação da API (OpenAPI / Swagger)
+
+A API é completamente documentada usando **OpenAPI 3.0** com **Swagger UI** interativo.
+
+### 🔗 URLs de Acesso (Ambiente de Desenvolvimento)
+
+#### Swagger UI (Interface Interativa)
+```
+http://localhost:8080/swagger-ui/index.html
+```
+- Interface visual para testar todos os endpoints
+- Documentação completa de requests e responses
+- Schemas dos DTOs
+- Exemplos de uso
+
+#### OpenAPI JSON
+```
+http://localhost:8080/v3/api-docs
+```
+- Especificação OpenAPI em formato JSON
+- Útil para geração de clientes automáticos
+- Importação em ferramentas como Postman/Insomnia
+
+#### OpenAPI YAML
+```
+http://localhost:8080/v3/api-docs.yaml
+```
+- Especificação OpenAPI em formato YAML
+
+### 📋 Metadados da API
+
+- **Título:** Shopping List API
+- **Versão:** v1
+- **Descrição:** API RESTful para gerenciamento de listas de compras
+- **Contato:** julio@shoopinglist.com
+- **Licença:** MIT License
+
+### 🔒 Documentação em Produção
+
+Por questões de segurança, a documentação Swagger é **desabilitada automaticamente** em produção (profile `prod`).
+
+Para habilitar em outros ambientes, configure no `application.yml`:
+
+```yaml
+springdoc:
+  api-docs:
+    enabled: true  # false em produção
+  swagger-ui:
+    enabled: true  # false em produção
+```
+
+### 🎯 Estrutura Preparada para Versionamento
+
+A configuração está preparada para suportar múltiplas versões da API:
+- `/v1/` endpoints (versão atual)
+- `/v2/` endpoints (futuras versões)
+- Documentação separada por versão
+
+### 🔐 Autenticação JWT no Swagger UI
+
+O Swagger UI está configurado para suportar autenticação Bearer JWT, permitindo testar endpoints protegidos.
+
+#### Como autenticar no Swagger:
+
+1. **Obter um token JWT:**
+   - Use o endpoint `POST /api/v1/auth/register` para criar uma conta
+   - Ou use `POST /api/v1/auth/login` com credenciais existentes
+   - Copie o valor do campo `accessToken` da resposta
+
+2. **Autenticar no Swagger:**
+   - Clique no botão 🔓 **Authorize** no topo da página do Swagger UI
+   - Cole o token no campo (NÃO adicione o prefixo "Bearer")
+   - Clique em "Authorize"
+   - Clique em "Close"
+
+3. **Testar endpoints protegidos:**
+   - Todos os endpoints agora serão chamados com o header `Authorization: Bearer {seu-token}`
+   - Endpoints que requerem autenticação terão um cadeado 🔒 indicando que estão protegidos
+
+#### Endpoints públicos vs protegidos:
+
+**Públicos (não requerem token):**
+- `POST /api/v1/auth/register` - Criar conta
+- `POST /api/v1/auth/login` - Login com email/senha  
+- `POST /api/v1/auth/google` - Login com Google
+- `POST /api/v1/auth/refresh` - Renovar token
+- `GET /actuator/health` - Health check
+
+**Protegidos (requerem token JWT):**
+- Todos os endpoints de `/api/v1/lists/**` - CRUD de listas
+- Todos os endpoints de `/api/v1/lists/{id}/items/**` - CRUD de itens
+- `GET /api/v1/users/me` - Dados do usuário
+- `POST /api/v1/auth/logout` - Logout
+
+#### Segurança por ambiente:
+
+```yaml
+# Development/Test (Swagger habilitado)
+spring:
+  profiles:
+    active: dev
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+# Production (Swagger desabilitado)
+spring:
+  profiles:
+    active: prod
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
 ```
 
 ---
@@ -507,12 +628,12 @@ markItemAsPurchased(itemId)
 markItemAsPending(itemId)
 
 // Operações em lote
-clearPurchasedItems() // Remove todos os itens comprados
+clearPurchasedItems(); // Remove todos os itens comprados
 
 // Consultas
-countTotalItems()
-countPendingItems()
-countPurchasedItems()
+countTotalItems();
+countPendingItems();
+countPurchasedItems();
 isOwnedBy(userId)
 ```
 
@@ -1618,7 +1739,7 @@ response.id()         // ao invés de response.getId()
 
 ---
 
-### 🔄 Mapeamento Centralizado com MapStruct
+ski### 🔄 Mapeamento Centralizado com MapStruct
 
 Todo o mapeamento entre entidades de domínio e DTOs é feito de forma **centralizada e automática** usando MapStruct.
 
@@ -2394,6 +2515,127 @@ Para testar rapidamente sem frontend:
 ---
 
 ## 🆕 Melhorias Recentes
+
+### ✨ **v1.4.0 - Segurança JWT no Swagger UI (Janeiro 2026)**
+
+**🎯 Objetivo:** Garantir que a documentação OpenAPI respeite as regras de segurança da aplicação e seja exposta de forma controlada por ambiente
+
+**Mudanças implementadas:**
+
+- ✅ **SecurityScheme Bearer JWT configurado:**
+  - Esquema de autenticação HTTP Bearer definido no OpenAPI
+  - Formato JWT especificado
+  - Descrição detalhada de como obter e usar o token
+  - SecurityRequirement global aplicado a todos os endpoints
+
+- ✅ **Endpoints corretamente documentados:**
+  - Endpoints públicos marcados com `@SecurityRequirement(name = "")`
+  - Endpoints protegidos automaticamente requerem JWT
+  - Tags organizadas por funcionalidade
+  - Descrições detalhadas com `@Operation`
+
+- ✅ **Spring Security configurado:**
+  - Swagger UI (`/swagger-ui/**`) liberado para acesso público
+  - OpenAPI docs (`/v3/api-docs/**`) liberado para acesso público
+  - Configuração alinhada com segurança real da API
+
+- ✅ **Habilitação controlada por ambiente:**
+  - **dev/test:** Swagger completamente habilitado
+  - **prod:** Swagger desabilitado (springdoc.enabled=false)
+  - Configuração via `application-{profile}.yml`
+
+- ✅ **Documentação atualizada:**
+  - Instruções de como autenticar no Swagger UI
+  - Lista de endpoints públicos vs protegidos
+  - Configuração de segurança por ambiente
+  - Exemplos práticos de uso
+
+**🔐 Funcionalidades de Segurança:**
+
+1. **Botão Authorize no Swagger UI:**
+   - Permite inserir token JWT
+   - Automaticamente adiciona header `Authorization: Bearer {token}`
+   - Visual claro (cadeado 🔒) para endpoints protegidos
+
+2. **Endpoints públicos claramente identificados:**
+   - `/api/v1/auth/register` - sem cadeado
+   - `/api/v1/auth/login` - sem cadeado
+   - `/api/v1/auth/google` - sem cadeado
+   - `/api/v1/auth/refresh` - sem cadeado
+
+3. **Endpoints protegidos requerem autenticação:**
+   - `/api/v1/lists/**` - com cadeado 🔒
+   - `/api/v1/users/me` - com cadeado 🔒
+   - `/api/v1/auth/logout` - com cadeado 🔒
+
+**📊 Segurança por Ambiente:**
+
+| Ambiente | Swagger UI | OpenAPI JSON | Proteção |
+|----------|-----------|--------------|----------|
+| dev      | ✅ Habilitado | ✅ Habilitado | Público |
+| test     | ✅ Habilitado | ✅ Habilitado | Público |
+| prod     | ❌ Desabilitado | ❌ Desabilitado | N/A |
+
+**Benefícios:**
+- **Testes autenticados** - possível testar todos endpoints protegidos no Swagger
+- **Segurança alinhada** - documentação reflete exatamente a segurança real
+- **Controle por ambiente** - produção não expõe documentação
+- **Experiência de desenvolvedor** - fácil obter token e testar API
+- **Documentação clara** - endpoints públicos vs protegidos visualmente distintos
+
+**Impacto:** Documentação Swagger completamente funcional e segura, alinhada com as regras de autenticação da API
+
+---
+
+### ✨ **v1.3.0 - Documentação OpenAPI 3.0 com Swagger UI (Janeiro 2026)**
+
+**🎯 Objetivo:** Fornecer documentação interativa e padronizada da API seguindo especificação OpenAPI 3.0
+
+**Mudanças implementadas:**
+
+- ✅ **Springdoc OpenAPI 2.3.0** integrado ao projeto
+  - Geração automática de documentação a partir do código
+  - Swagger UI interativo para testar endpoints
+  - Especificação OpenAPI disponível em JSON e YAML
+
+- ✅ **Configuração completa de metadados:**
+  - Título: "Shopping List API"
+  - Versão: v1 (preparado para versionamento futuro)
+  - Descrição funcional detalhada com features principais
+  - Informações de contato e licença
+  - Servidores configurados (dev, preparado para staging/prod)
+
+- ✅ **Endpoints de documentação disponíveis:**
+  - `/swagger-ui/index.html` - Interface interativa Swagger UI
+  - `/v3/api-docs` - Especificação OpenAPI em JSON
+  - `/v3/api-docs.yaml` - Especificação OpenAPI em YAML
+
+- ✅ **Segurança configurada:**
+  - Swagger habilitado apenas em desenvolvimento
+  - Desabilitado automaticamente em produção (profile `prod`)
+  - Configuração por ambiente via `application.yml`
+
+- ✅ **Estrutura preparada para evolução:**
+  - Suporte a múltiplas versões da API (/v1, /v2, etc)
+  - Configuração de múltiplos servidores (dev, staging, prod)
+  - Tags organizadas e operações ordenadas alfabeticamente
+  - Duração de requests exibida para análise de performance
+
+**📊 Benefícios:**
+- **Documentação sempre atualizada** - gerada do código
+- **Testes interativos** - Swagger UI permite testar todos endpoints
+- **Integração com ferramentas** - OpenAPI JSON para Postman, Insomnia, etc
+- **Geração de clientes** - Especificação pode gerar SDKs automaticamente
+- **Onboarding facilitado** - novos desenvolvedores entendem a API rapidamente
+
+**🔗 Acesso em desenvolvimento:**
+```
+http://localhost:8080/swagger-ui/index.html
+```
+
+**Impacto:** Documentação completa e interativa disponível sem esforço manual de manutenção
+
+---
 
 ### ✨ **v1.2.0 - Mapeamento Centralizado com MapStruct (Janeiro 2026)**
 

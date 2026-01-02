@@ -6,6 +6,8 @@ import br.com.shooping.list.application.dto.shoppinglist.UpdateItemRequest;
 import br.com.shooping.list.application.usecase.AddItemToListUseCase;
 import br.com.shooping.list.application.usecase.RemoveItemFromListUseCase;
 import br.com.shooping.list.application.usecase.UpdateItemUseCase;
+import br.com.shooping.list.interfaces.rest.v1.docs.ShoppingListItemAPI;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,17 +18,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Controller REST para operações de itens em listas de compras.
+ * Controller REST para gerenciamento de itens dentro de uma lista de compras.
  * Base path: /api/v1/lists/{listId}/items
- *
- * Todos os endpoints deste controller requerem autenticação JWT.
- * Todas as operações validam que o usuário é o proprietário da lista.
+ * Todos os endpoints requerem autenticação JWT.
  */
 @RestController
-@RequestMapping("/api/v1/lists")
+@RequestMapping("/api/v1/lists/{listId}/items")
 @RequiredArgsConstructor
 @Slf4j
-public class ShoppingListItemController {
+@Tag(name = "Shopping List Items", description = "Endpoints para gerenciamento de itens em listas de compras")
+public class ShoppingListItemController implements ShoppingListItemAPI {
 
     private final AddItemToListUseCase addItemToListUseCase;
     private final UpdateItemUseCase updateItemUseCase;
@@ -39,8 +40,9 @@ public class ShoppingListItemController {
      * @param request dados do item (nome, quantidade, unidade)
      * @return item criado com ID gerado
      */
-    @PostMapping("/{listId}/items")
-    public ResponseEntity<ItemResponse> addItem(
+    @PostMapping
+    @Override
+    public ResponseEntity<ItemResponse> addItemToList(
             @PathVariable Long listId,
             @Valid @RequestBody AddItemRequest request) {
 
@@ -66,7 +68,8 @@ public class ShoppingListItemController {
      * @param request campos a serem atualizados (nome, quantidade, unidade, status)
      * @return item atualizado
      */
-    @PatchMapping("/{listId}/items/{itemId}")
+    @PatchMapping("/{itemId}")
+    @Override
     public ResponseEntity<ItemResponse> updateItem(
             @PathVariable Long listId,
             @PathVariable Long itemId,
@@ -90,7 +93,8 @@ public class ShoppingListItemController {
      * @param itemId ID do item a ser removido
      * @return 204 No Content em caso de sucesso
      */
-    @DeleteMapping("/{listId}/items/{itemId}")
+    @DeleteMapping("/{itemId}")
+    @Override
     public ResponseEntity<Void> removeItem(
             @PathVariable Long listId,
             @PathVariable Long itemId) {
@@ -118,4 +122,3 @@ public class ShoppingListItemController {
         return Long.parseLong(userId);
     }
 }
-

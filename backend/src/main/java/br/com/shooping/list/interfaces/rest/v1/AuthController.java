@@ -14,6 +14,7 @@ import br.com.shooping.list.application.usecase.LogoutUseCase;
 import br.com.shooping.list.application.usecase.RefreshTokenUseCase;
 import br.com.shooping.list.application.usecase.RegisterUserUseCase;
 import br.com.shooping.list.infrastructure.security.CookieService;
+import br.com.shooping.list.interfaces.rest.v1.docs.AuthAPI;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -24,16 +25,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Controller REST para operações de autenticação
- * Base path: /api/v1/auth
- *
- * Suporta refresh token via cookie HttpOnly (seguro) e body (dev/test)
+ * Controller REST para operações de autenticação.
+ * Implementa AuthAPI que contém toda a documentação OpenAPI.
  */
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Slf4j
-public class AuthController {
+public class AuthController implements AuthAPI {
 
     private final RegisterUserUseCase registerUserUseCase;
     private final LoginUserUseCase loginUserUseCase;
@@ -42,13 +41,8 @@ public class AuthController {
     private final LogoutUseCase logoutUseCase;
     private final CookieService cookieService;
 
-    /**
-     * Endpoint para registro de novo usuário LOCAL
-     *
-     * @param request dados do usuário (email, nome, senha)
-     * @return usuário criado (sem dados sensíveis)
-     */
     @PostMapping("/register")
+    @Override
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
         log.info("Requisição de registro recebida para email: {}", request.email());
 
@@ -67,6 +61,7 @@ public class AuthController {
      * @return tokens de acesso e refresh (refresh também vai no cookie)
      */
     @PostMapping("/login")
+    @Override
     public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request,
             HttpServletRequest httpRequest,
@@ -105,6 +100,7 @@ public class AuthController {
      * @return tokens de acesso e refresh (refresh também vai no cookie)
      */
     @PostMapping("/google")
+    @Override
     public ResponseEntity<LoginResponse> googleLogin(
             @Valid @RequestBody GoogleLoginRequest request,
             HttpServletRequest httpRequest,
@@ -123,14 +119,15 @@ public class AuthController {
 
     /**
      * Endpoint para renovar access token usando refresh token
+     * Suporta refresh token via cookie HttpOnly (preferencial) ou body (backward compatibility)
      *
-     *
-     * @param request refresh token a ser validado e rotacionado (opcional se vier no cookie)
-     * @param httpRequest requisição HTTP para extrair metadata e cookie
+     * @param request refresh token no body (opcional se cookie presente)
+     * @param httpRequest requisição HTTP para extrair cookie
      * @param httpResponse resposta HTTP para adicionar novo cookie
-     * @return novo access token e novo refresh token (refresh também vai no cookie)
+     * @return novo access token e novo refresh token (rotação)
      */
     @PostMapping("/refresh")
+    @Override
     public ResponseEntity<RefreshTokenResponse> refresh(
             @RequestBody(required = false) RefreshTokenRequest request,
             HttpServletRequest httpRequest,
@@ -182,6 +179,7 @@ public class AuthController {
      * @return 204 No Content
      */
     @PostMapping("/logout")
+    @Override
     public ResponseEntity<Void> logout(
             @RequestBody(required = false) LogoutRequest request,
             HttpServletRequest httpRequest,

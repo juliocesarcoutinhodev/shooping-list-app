@@ -51,3 +51,9 @@ logging:
     org.springframework.web: WARN
     org.hibernate.SQL: WARN
 
+# OpenAPI / Swagger DESABILITADO em produção por questões de segurança
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

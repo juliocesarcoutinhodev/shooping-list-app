@@ -2,6 +2,9 @@ package br.com.shooping.list.interfaces.rest.v1;
 
 import br.com.shooping.list.application.dto.user.UserMeResponse;
 import br.com.shooping.list.application.usecase.GetCurrentUserUseCase;
+import br.com.shooping.list.interfaces.rest.v1.docs.UserAPI;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +24,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 @Slf4j
-public class UserController {
+@Tag(name = "User", description = "Endpoints de gerenciamento do perfil do usuário autenticado")
+public class UserController implements UserAPI {
 
     private final GetCurrentUserUseCase getCurrentUserUseCase;
 
@@ -31,6 +35,7 @@ public class UserController {
      * @return dados do usuário extraídos do JWT
      */
     @GetMapping("/me")
+    @Override
     public ResponseEntity<UserMeResponse> getCurrentUser() {
         log.info("Requisição GET /api/v1/users/me recebida");
 

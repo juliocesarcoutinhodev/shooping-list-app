@@ -4,11 +4,9 @@ import br.com.shooping.list.application.dto.shoppinglist.CreateShoppingListReque
 import br.com.shooping.list.application.dto.shoppinglist.ShoppingListResponse;
 import br.com.shooping.list.application.dto.shoppinglist.ShoppingListSummaryResponse;
 import br.com.shooping.list.application.dto.shoppinglist.UpdateShoppingListRequest;
-import br.com.shooping.list.application.usecase.CreateShoppingListUseCase;
-import br.com.shooping.list.application.usecase.DeleteShoppingListUseCase;
-import br.com.shooping.list.application.usecase.GetMyShoppingListsUseCase;
-import br.com.shooping.list.application.usecase.GetShoppingListByIdUseCase;
-import br.com.shooping.list.application.usecase.UpdateShoppingListUseCase;
+import br.com.shooping.list.application.usecase.*;
+import br.com.shooping.list.interfaces.rest.v1.docs.ShoppingListAPI;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,14 +22,14 @@ import java.util.List;
  * Controller REST para operações de listas de compras.
  * Base path: /api/v1/lists
  *
- * Todos os endpoints deste controller requerem autenticação JWT.
- * O ownerId é extraído automaticamente do token JWT via SecurityContext.
+ * Todos os endpoints requerem autenticação JWT.
  */
 @RestController
 @RequestMapping("/api/v1/lists")
 @RequiredArgsConstructor
 @Slf4j
-public class ShoppingListController {
+@Tag(name = "Shopping Lists", description = "Endpoints CRUD para gerenciamento de listas de compras")
+public class ShoppingListController implements ShoppingListAPI {
 
     private final CreateShoppingListUseCase createShoppingListUseCase;
     private final GetMyShoppingListsUseCase getMyShoppingListsUseCase;
@@ -46,6 +44,7 @@ public class ShoppingListController {
      * @return lista criada com ID gerado
      */
     @PostMapping
+    @Override
     public ResponseEntity<ShoppingListResponse> createList(@Valid @RequestBody CreateShoppingListRequest request) {
         log.info("Requisição recebida: POST /api/v1/lists");
 
@@ -64,6 +63,7 @@ public class ShoppingListController {
      * @return lista de resumos das listas de compras (pode ser vazia)
      */
     @GetMapping
+    @Override
     public ResponseEntity<List<ShoppingListSummaryResponse>> getMyLists() {
         log.info("Requisição recebida: GET /api/v1/lists");
 
@@ -84,6 +84,7 @@ public class ShoppingListController {
      * @return lista completa com todos os itens
      */
     @GetMapping("/{id}")
+    @Override
     public ResponseEntity<ShoppingListResponse> getListById(@PathVariable Long id) {
         log.info("Requisição recebida: GET /api/v1/lists/{}", id);
 
@@ -107,6 +108,7 @@ public class ShoppingListController {
      * @return lista atualizada
      */
     @PatchMapping("/{id}")
+    @Override
     public ResponseEntity<ShoppingListResponse> updateList(
             @PathVariable Long id,
             @Valid @RequestBody UpdateShoppingListRequest request
@@ -131,6 +133,7 @@ public class ShoppingListController {
      * @return 204 No Content em caso de sucesso
      */
     @DeleteMapping("/{id}")
+    @Override
     public ResponseEntity<Void> deleteList(@PathVariable Long id) {
         log.info("Requisição recebida: DELETE /api/v1/lists/{}", id);
 
@@ -155,4 +158,3 @@ public class ShoppingListController {
         return Long.parseLong(userId);
     }
 }
-
