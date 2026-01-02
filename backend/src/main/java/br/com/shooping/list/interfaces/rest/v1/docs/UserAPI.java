@@ -11,76 +11,77 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 
 /**
- * Interface de documentação OpenAPI para endpoints de usuário.
+ * OpenAPI documentation contract for authenticated user endpoints.
  */
 @Tag(
-    name = "User",
-    description = """
-        Endpoints de gerenciamento do perfil do usuário autenticado.
-        
-        **Funcionalidades:**
-        - Consultar dados do perfil
-        - Atualizar informações pessoais (futuro)
-        - Deletar conta (futuro)
-        
-        **Todos os endpoints requerem autenticação JWT.**
-        """
+        name = "User",
+        description = """
+                Endpoints for managing the authenticated user's profile.
+
+                Capabilities:
+                - Retrieve current user profile
+                - Update personal information (future)
+                - Delete account (future)
+
+                All endpoints require JWT (Bearer).
+                """
 )
 public interface UserAPI {
 
     @Operation(
-        summary = "Obter dados do usuário atual",
-        description = """
-            Retorna informações completas do usuário autenticado.
-            
-            **Dados retornados:**
-            - ID, email, nome
-            - Provider (LOCAL ou GOOGLE)
-            - Status da conta (ACTIVE, INACTIVE, BLOCKED)
-            - Timestamps de criação e atualização
-            
-            **Segurança:**
-            - Dados extraídos do JWT (não requer consulta ao banco)
-            - Não expõe dados sensíveis (senha, tokens)
-            
-            **Requer autenticação JWT.**
-            """,
-        tags = {"User"}
+            summary = "Get current authenticated user",
+            description = """
+                    Returns profile information for the currently authenticated user.
+
+                    Returned data:
+                    - ID, email, and name
+                    - Authentication provider (LOCAL or GOOGLE)
+                    - Account status (ACTIVE, INACTIVE, BLOCKED)
+                    - Creation and update timestamps
+
+                    Security notes:
+                    - User identity is resolved from the JWT
+                    - No sensitive data is exposed (passwords, tokens, credentials)
+                    - Depending on implementation, data may be enriched from persistence
+
+                    Requires JWT (Bearer).
+                    """
     )
     @ApiResponses({
-        @ApiResponse(
-            responseCode = "200",
-            description = "Dados do usuário retornados com sucesso",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = UserMeResponse.class),
-                examples = @ExampleObject(
-                    name = "Usuário LOCAL",
-                    value = """
-                        {
-                          "id": 1,
-                          "email": "usuario@exemplo.com",
-                          "name": "João Silva",
-                          "provider": "LOCAL",
-                          "status": "ACTIVE",
-                          "createdAt": "2026-01-01T10:00:00Z",
-                          "updatedAt": "2026-01-02T15:30:00Z"
-                        }
-                        """
-                )
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "User profile retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserMeResponse.class),
+                            examples = @ExampleObject(
+                                    name = "LOCAL user",
+                                    value = """
+                                            {
+                                              "id": 1,
+                                              "email": "user@example.com",
+                                              "name": "John Doe",
+                                              "provider": "LOCAL",
+                                              "status": "ACTIVE",
+                                              "createdAt": "2026-01-01T10:00:00Z",
+                                              "updatedAt": "2026-01-02T15:30:00Z"
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthenticated (missing or invalid token)",
+                    content = @Content(mediaType = "application/json")
+                    // TODO: ErrorResponse schema
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "User not found (valid token but user no longer exists)",
+                    content = @Content(mediaType = "application/json")
+                    // TODO: ErrorResponse schema
             )
-        ),
-        @ApiResponse(
-            responseCode = "401",
-            description = "Não autenticado (token ausente ou inválido)",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Usuário não encontrado (token válido mas usuário deletado)",
-            content = @Content(mediaType = "application/json")
-        )
     })
     ResponseEntity<UserMeResponse> getCurrentUser();
 }
-

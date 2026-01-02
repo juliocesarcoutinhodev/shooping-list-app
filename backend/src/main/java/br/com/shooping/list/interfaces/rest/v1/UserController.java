@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "User", description = "Endpoints de gerenciamento do perfil do usuário autenticado")
 public class UserController implements UserAPI {
 
     private final GetCurrentUserUseCase getCurrentUserUseCase;

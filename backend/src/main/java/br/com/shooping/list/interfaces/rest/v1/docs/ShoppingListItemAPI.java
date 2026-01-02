@@ -17,273 +17,274 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 /**
- * Interface de documentação OpenAPI para endpoints de itens de lista.
+ * OpenAPI documentation contract for Shopping List Items endpoints.
  */
 @Tag(
-    name = "Shopping List Items",
-    description = """
-        Endpoints para gerenciamento de itens dentro de listas de compras.
-        
-        **Funcionalidades:**
-        - Adicionar itens a uma lista
-        - Atualizar itens (nome, quantidade, unidade, preço, status)
-        - Marcar item como comprado/pendente (toggle status)
-        - Remover itens
-        
-        **Regras de negócio:**
-        - Máximo 100 itens por lista
-        - Nomes de itens devem ser únicos dentro da lista
-        - Status: PENDING (padrão) ou PURCHASED
-        
-        **Todos os endpoints requerem autenticação JWT.**
-        """
+        name = "Shopping List Items",
+        description = """
+                Endpoints for managing items within shopping lists.
+
+                Capabilities:
+                - Add items to a list
+                - Update items (name, quantity, unit, unit price, status)
+                - Toggle item status (PENDING / PURCHASED)
+                - Remove items
+
+                Business rules:
+                - Maximum of 100 items per list
+                - Item names must be unique within the same list
+                - Default status: PENDING
+                """
 )
 public interface ShoppingListItemAPI {
 
     @Operation(
-        summary = "Adicionar item à lista",
-        description = """
-            Adiciona um novo item a uma lista de compras existente.
-            
-            **Campos obrigatórios:**
-            - name (2-100 caracteres, único na lista)
-            - quantity (maior que 0)
-            - unit (kg, un, L, etc.)
-            
-            **Campos opcionais:**
-            - unitPrice (preço unitário para cálculo de total estimado)
-            
-            **Validações:**
-            - Lista deve existir
-            - Apenas o dono pode adicionar itens
-            - Nome do item deve ser único na lista
-            - Limite de 100 itens por lista
-            
-            **Comportamento:**
-            - Status inicial: PENDING
-            - Nome normalizado para validação de duplicatas
-            
-            **Requer autenticação JWT.**
-            """,
-        tags = {"Shopping List Items"}
+            summary = "Add an item to a shopping list",
+            description = """
+                    Adds a new item to an existing shopping list.
+
+                    Required fields:
+                    - name (2-100 chars, must be unique within the list)
+                    - quantity (must be greater than 0)
+                    - unit (e.g., kg, un, L)
+
+                    Optional fields:
+                    - unitPrice (unit price for estimated total calculations)
+
+                    Validations and rules:
+                    - The list must exist
+                    - Only the list owner can add items
+                    - Item name must be unique (case/whitespace normalized)
+                    - List must not exceed 100 items
+
+                    Behavior:
+                    - Initial status: PENDING
+                    - Name may be normalized to detect duplicates reliably
+
+                    Requires JWT (Bearer).
+                    """
     )
     @ApiResponses({
-        @ApiResponse(
-            responseCode = "201",
-            description = "Item adicionado com sucesso",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = ItemResponse.class),
-                examples = @ExampleObject(
-                    name = "Item criado",
-                    value = """
-                        {
-                          "id": 1,
-                          "name": "Arroz",
-                          "quantity": 2.0,
-                          "unit": "kg",
-                          "unitPrice": 5.50,
-                          "status": "PENDING",
-                          "createdAt": "2026-01-02T10:05:00Z",
-                          "updatedAt": "2026-01-02T10:05:00Z"
-                        }
-                        """
-                )
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Item created successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ItemResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Created item",
+                                    value = """
+                                            {
+                                              "id": 1,
+                                              "name": "Rice",
+                                              "quantity": 2.0,
+                                              "unit": "kg",
+                                              "unitPrice": 5.50,
+                                              "status": "PENDING",
+                                              "createdAt": "2026-01-02T10:05:00Z",
+                                              "updatedAt": "2026-01-02T10:05:00Z"
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input (validation failed)",
+                    content = @Content(mediaType = "application/json")
+                    // TODO: ValidationErrorResponse schema
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthenticated",
+                    content = @Content(mediaType = "application/json")
+                    // TODO: ErrorResponse schema
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden (not the list owner)",
+                    content = @Content(mediaType = "application/json")
+                    // TODO: ErrorResponse schema
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Shopping list not found",
+                    content = @Content(mediaType = "application/json")
+                    // TODO: ErrorResponse schema
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Item name already exists within the list",
+                    content = @Content(mediaType = "application/json")
+                    // TODO: ErrorResponse schema
+            ),
+            @ApiResponse(
+                    responseCode = "422",
+                    description = "List item limit reached (max 100 items)",
+                    content = @Content(mediaType = "application/json")
+                    // TODO: ErrorResponse schema
             )
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Dados inválidos (validação falhou)",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "401",
-            description = "Não autenticado",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Acesso negado (não é o dono da lista)",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Lista não encontrada",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "409",
-            description = "Item com este nome já existe na lista",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "422",
-            description = "Lista atingiu limite de 100 itens",
-            content = @Content(mediaType = "application/json")
-        )
     })
     ResponseEntity<ItemResponse> addItemToList(
-        @Parameter(
-            name = "listId",
-            description = "ID da lista onde adicionar o item",
-            required = true,
-            example = "1"
-        )
-        @PathVariable Long listId,
-        @Valid @RequestBody AddItemRequest request
+            @Parameter(
+                    name = "listId",
+                    description = "Shopping list ID",
+                    required = true,
+                    example = "1"
+            )
+            @PathVariable Long listId,
+            @Valid @RequestBody AddItemRequest request
     );
 
     @Operation(
-        summary = "Atualizar item",
-        description = """
-            Atualiza informações de um item existente.
-            
-            **Atualização parcial:**
-            - Envie apenas os campos que deseja alterar
-            - Campos não enviados permanecem inalterados
-            
-            **Campos atualizáveis:**
-            - name (deve permanecer único na lista)
-            - quantity (deve ser maior que 0)
-            - unit (kg, un, L, etc.)
-            - unitPrice (preço unitário)
-            - status (PENDING ou PURCHASED)
-            
-            **Uso comum:**
-            - Toggle status: envie apenas {"status": "PURCHASED"} ou {"status": "PENDING"}
-            - Ajustar quantidade: envie apenas {"quantity": 3.0}
-            
-            **Validações:**
-            - Lista deve existir
-            - Item deve existir na lista
-            - Apenas o dono pode atualizar
-            - Se alterar nome, deve permanecer único
-            
-            **Requer autenticação JWT.**
-            """,
-        tags = {"Shopping List Items"}
+            summary = "Update a shopping list item",
+            description = """
+                    Updates an existing item.
+
+                    Partial update:
+                    - Send only the fields you want to change
+                    - Omitted fields remain unchanged
+
+                    Updatable fields:
+                    - name (must remain unique within the list)
+                    - quantity (must be greater than 0)
+                    - unit (e.g., kg, un, L)
+                    - unitPrice (unit price)
+                    - status (PENDING or PURCHASED)
+
+                    Common usage:
+                    - Toggle status: send {"status": "PURCHASED"} or {"status": "PENDING"}
+                    - Update quantity: send {"quantity": 3.0}
+
+                    Access rules:
+                    - The list must exist
+                    - The item must exist within the list
+                    - Only the owner can update items
+                    - If name changes, it must remain unique
+
+                    Requires JWT (Bearer).
+                    """
     )
     @ApiResponses({
-        @ApiResponse(
-            responseCode = "200",
-            description = "Item atualizado com sucesso",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = ItemResponse.class),
-                examples = @ExampleObject(
-                    name = "Item atualizado",
-                    value = """
-                        {
-                          "id": 1,
-                          "name": "Arroz Integral",
-                          "quantity": 3.0,
-                          "unit": "kg",
-                          "unitPrice": 6.00,
-                          "status": "PURCHASED",
-                          "createdAt": "2026-01-02T10:05:00Z",
-                          "updatedAt": "2026-01-02T15:30:00Z"
-                        }
-                        """
-                )
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Item updated successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ItemResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Updated item",
+                                    value = """
+                                            {
+                                              "id": 1,
+                                              "name": "Brown Rice",
+                                              "quantity": 3.0,
+                                              "unit": "kg",
+                                              "unitPrice": 6.00,
+                                              "status": "PURCHASED",
+                                              "createdAt": "2026-01-02T10:05:00Z",
+                                              "updatedAt": "2026-01-02T15:30:00Z"
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input or no fields provided",
+                    content = @Content(mediaType = "application/json")
+                    // TODO: ValidationErrorResponse schema
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthenticated",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden (not the list owner)",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Shopping list or item not found",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Item name already exists within the list",
+                    content = @Content(mediaType = "application/json")
             )
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Dados inválidos ou nenhum campo fornecido",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "401",
-            description = "Não autenticado",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Acesso negado (não é o dono da lista)",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Lista ou item não encontrado",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "409",
-            description = "Novo nome já existe em outro item da lista",
-            content = @Content(mediaType = "application/json")
-        )
     })
     ResponseEntity<ItemResponse> updateItem(
-        @Parameter(
-            name = "listId",
-            description = "ID da lista que contém o item",
-            required = true,
-            example = "1"
-        )
-        @PathVariable Long listId,
-        @Parameter(
-            name = "itemId",
-            description = "ID do item a ser atualizado",
-            required = true,
-            example = "1"
-        )
-        @PathVariable Long itemId,
-        @Valid @RequestBody UpdateItemRequest request
+            @Parameter(
+                    name = "listId",
+                    description = "Shopping list ID",
+                    required = true,
+                    example = "1"
+            )
+            @PathVariable Long listId,
+            @Parameter(
+                    name = "itemId",
+                    description = "Item ID",
+                    required = true,
+                    example = "1"
+            )
+            @PathVariable Long itemId,
+            @Valid @RequestBody UpdateItemRequest request
     );
 
     @Operation(
-        summary = "Remover item da lista",
-        description = """
-            Remove permanentemente um item de uma lista de compras.
-            
-            **Atenção:**
-            - Operação irreversível
-            
-            **Validações:**
-            - Lista deve existir
-            - Item deve existir na lista
-            - Apenas o dono pode remover
-            
-            **Requer autenticação JWT.**
-            """,
-        tags = {"Shopping List Items"}
+            summary = "Remove an item from a shopping list",
+            description = """
+                    Permanently removes an item from a shopping list.
+
+                    Notes:
+                    - This operation is irreversible
+
+                    Access rules:
+                    - The list must exist
+                    - The item must exist within the list
+                    - Only the owner can remove items
+
+                    Requires JWT (Bearer).
+                    """
     )
     @ApiResponses({
-        @ApiResponse(
-            responseCode = "204",
-            description = "Item removido com sucesso (sem conteúdo)"
-        ),
-        @ApiResponse(
-            responseCode = "401",
-            description = "Não autenticado",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Acesso negado (não é o dono da lista)",
-            content = @Content(mediaType = "application/json")
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Lista ou item não encontrado",
-            content = @Content(mediaType = "application/json")
-        )
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Item removed successfully (no content)"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthenticated",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden (not the list owner)",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Shopping list or item not found",
+                    content = @Content(mediaType = "application/json")
+            )
     })
     ResponseEntity<Void> removeItem(
-        @Parameter(
-            name = "listId",
-            description = "ID da lista que contém o item",
-            required = true,
-            example = "1"
-        )
-        @PathVariable Long listId,
-        @Parameter(
-            name = "itemId",
-            description = "ID do item a ser removido",
-            required = true,
-            example = "1"
-        )
-        @PathVariable Long itemId
+            @Parameter(
+                    name = "listId",
+                    description = "Shopping list ID",
+                    required = true,
+                    example = "1"
+            )
+            @PathVariable Long listId,
+            @Parameter(
+                    name = "itemId",
+                    description = "Item ID",
+                    required = true,
+                    example = "1"
+            )
+            @PathVariable Long itemId
     );
 }
-
