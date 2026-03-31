@@ -42,7 +42,7 @@ services:
 networks:
   edge:
     external: true
-    name: edge
+    name: infra_app-network
   app_internal:
     driver: bridge
 

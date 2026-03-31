@@ -49,16 +49,16 @@ O arquivo `.env.production` sera criado/atualizado automaticamente pelo workflow
 
 Neste fluxo, o banco de dados tambem sobe junto com a aplicacao via Compose (`service: mysql`) e fica acessivel internamente por `MYSQL_HOST=mysql` e `MYSQL_PORT=3306`.
 
-Crie a rede externa compartilhada com o Caddy:
+Crie (se necessario) a rede externa compartilhada com o Caddy:
 
 ```bash
-docker network create edge
+docker network inspect infra_app-network >/dev/null 2>&1 || docker network create infra_app-network
 ```
 
-Garanta que o container do Caddy esteja na rede `edge`:
+Garanta que o container do Caddy esteja na rede `infra_app-network`:
 
 ```bash
-docker network connect edge caddy-staging || true
+docker network connect infra_app-network caddy-staging || true
 ```
 
 ## 4) Fluxo de deploy
