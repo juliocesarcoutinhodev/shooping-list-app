@@ -2,8 +2,7 @@ name: Deploy to VPS
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
     paths:
       - backend/**
       - .github/workflows/deploy.yml
@@ -23,6 +22,7 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Checkout
@@ -46,7 +46,7 @@ jobs:
           GHCR_USERNAME: ${{ secrets.GHCR_USERNAME || github.repository_owner }}
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN || github.token }}
         run: |
-          set -e
+          set -euo pipefail
           test -n "$VPS_HOST" || (echo "Missing VPS_HOST (configure secret or variable)." && exit 1)
           test -n "$VPS_USER" || (echo "Missing VPS_USER (configure secret or variable)." && exit 1)
           test -n "$VPS_PORT" || (echo "Missing VPS_PORT (configure secret or variable)." && exit 1)
@@ -58,8 +58,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.GHCR_USERNAME || github.repository_owner }}
+          password: ${{ secrets.GHCR_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Build and push image
         uses: docker/build-push-action@v6
@@ -154,4 +154,3 @@ jobs:
             echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${GHCR_USERNAME}" --password-stdin
             APP_IMAGE=${IMAGE_REPO}:${COMMIT_SHA} docker compose --env-file .env.production -f docker-compose.prod.yml up -d
             docker image prune -f --filter "until=168h" || true
-
