@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - backend/**
+      - .github/workflows/deploy.yml
   workflow_dispatch:
 
 permissions:
@@ -41,8 +44,8 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: ./Dockerfile
+          context: ./backend
+          file: ./backend/Dockerfile
           push: true
           tags: |
             ${{ env.IMAGE_REPO }}:latest
@@ -50,11 +53,14 @@ jobs:
 
       - name: Ensure app directory exists on VPS
         uses: appleboy/ssh-action@v1.2.0
+        env:
+          APP_NAME: ${{ env.APP_NAME }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
+          envs: APP_NAME
           script: |
             set -e
             mkdir -p /opt/${APP_NAME}
@@ -66,8 +72,9 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
-          source: docker-compose.prod.yml
+          source: backend/docker-compose.prod.yml
           target: /opt/${{ env.APP_NAME }}/
+          strip_components: 1
 
       - name: Render .env.production on VPS
         uses: appleboy/ssh-action@v1.2.0
