@@ -14,6 +14,7 @@ permissions:
 
 env:
   APP_NAME: shopping-list-api
+  APP_DIR: /home/topone/shopping-list-api
   IMAGE_NAME: shopping-list-api
   VPS_HOST: vps7348.integrator.host
   VPS_USER: topone
@@ -75,15 +76,16 @@ jobs:
         uses: appleboy/ssh-action@v1.2.0
         env:
           APP_NAME: ${{ env.APP_NAME }}
+          APP_DIR: ${{ env.APP_DIR }}
         with:
           host: ${{ env.VPS_HOST }}
           username: ${{ env.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ env.VPS_PORT }}
-          envs: APP_NAME
+          envs: APP_NAME,APP_DIR
           script: |
             set -e
-            mkdir -p /opt/${APP_NAME}
+            mkdir -p "${APP_DIR}"
 
       - name: Upload compose file to VPS
         uses: appleboy/scp-action@v0.1.7
@@ -93,13 +95,14 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ env.VPS_PORT }}
           source: backend/docker-compose.prod.yml
-          target: /opt/${{ env.APP_NAME }}/
+          target: ${{ env.APP_DIR }}/
           strip_components: 1
 
       - name: Render .env.production on VPS
         uses: appleboy/ssh-action@v1.2.0
         env:
           APP_NAME: ${{ env.APP_NAME }}
+          APP_DIR: ${{ env.APP_DIR }}
           MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
           MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
           MYSQL_USER: ${{ secrets.MYSQL_USER }}
@@ -113,10 +116,10 @@ jobs:
           username: ${{ env.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ env.VPS_PORT }}
-          envs: APP_NAME,MYSQL_ROOT_PASSWORD,MYSQL_DATABASE,MYSQL_USER,MYSQL_PASSWORD,JWT_SECRET,JWT_ISSUER,GOOGLE_CLIENT_ID,COOKIE_DOMAIN
+          envs: APP_NAME,APP_DIR,MYSQL_ROOT_PASSWORD,MYSQL_DATABASE,MYSQL_USER,MYSQL_PASSWORD,JWT_SECRET,JWT_ISSUER,GOOGLE_CLIENT_ID,COOKIE_DOMAIN
           script: |
             set -e
-            cd /opt/${APP_NAME}
+            cd "${APP_DIR}"
             {
               printf 'APP_NAME=%s\n' "${APP_NAME}"
               printf 'PROFILE=prod\n'
@@ -138,6 +141,7 @@ jobs:
         uses: appleboy/ssh-action@v1.2.0
         env:
           APP_NAME: ${{ env.APP_NAME }}
+          APP_DIR: ${{ env.APP_DIR }}
           IMAGE_REPO: ${{ env.IMAGE_REPO }}
           COMMIT_SHA: ${{ github.sha }}
           GHCR_USERNAME: ${{ secrets.GHCR_USERNAME || github.repository_owner }}
@@ -147,10 +151,10 @@ jobs:
           username: ${{ env.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ env.VPS_PORT }}
-          envs: APP_NAME,IMAGE_REPO,COMMIT_SHA,GHCR_USERNAME,GHCR_TOKEN
+          envs: APP_NAME,APP_DIR,IMAGE_REPO,COMMIT_SHA,GHCR_USERNAME,GHCR_TOKEN
           script: |
             set -e
-            cd /opt/${APP_NAME}
+            cd "${APP_DIR}"
             echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${GHCR_USERNAME}" --password-stdin
             APP_IMAGE=${IMAGE_REPO}:${COMMIT_SHA} docker compose --env-file .env.production -f docker-compose.prod.yml up -d
             docker image prune -f --filter "until=168h" || true
