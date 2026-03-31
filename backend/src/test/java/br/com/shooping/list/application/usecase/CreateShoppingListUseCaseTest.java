@@ -2,6 +2,7 @@ package br.com.shooping.list.application.usecase;
 
 import br.com.shooping.list.application.dto.shoppinglist.CreateShoppingListRequest;
 import br.com.shooping.list.application.dto.shoppinglist.ShoppingListResponse;
+import br.com.shooping.list.application.mapper.ShoppingListMapper;
 import br.com.shooping.list.domain.shoppinglist.ShoppingList;
 import br.com.shooping.list.domain.shoppinglist.ShoppingListRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +29,9 @@ class CreateShoppingListUseCaseTest {
     @Mock
     private ShoppingListRepository shoppingListRepository;
 
+    @Mock
+    private ShoppingListMapper mapper;
+
     @InjectMocks
     private CreateShoppingListUseCase createShoppingListUseCase;
 
@@ -53,23 +57,40 @@ class CreateShoppingListUseCaseTest {
             return list;
         });
 
+        when(mapper.toResponseWithoutItems(any(ShoppingList.class))).thenAnswer(invocation -> {
+            ShoppingList list = invocation.getArgument(0);
+            return new ShoppingListResponse(
+                    list.getId(),
+                    list.getOwnerId(),
+                    list.getTitle(),
+                    list.getDescription(),
+                    null, // items
+                    list.countTotalItems(),
+                    list.countPendingItems(),
+                    list.countPurchasedItems(),
+                    list.getCreatedAt(),
+                    list.getUpdatedAt()
+            );
+        });
+
         // Act
         ShoppingListResponse response = createShoppingListUseCase.execute(ownerId, validRequest);
 
         // Assert
         assertThat(response).isNotNull();
-        assertThat(response.getId()).isEqualTo(1L);
-        assertThat(response.getOwnerId()).isEqualTo(ownerId);
-        assertThat(response.getTitle()).isEqualTo(validRequest.getTitle());
-        assertThat(response.getDescription()).isEqualTo(validRequest.getDescription());
-        assertThat(response.getItemsCount()).isZero();
-        assertThat(response.getPendingItemsCount()).isZero();
-        assertThat(response.getPurchasedItemsCount()).isZero();
-        assertThat(response.getCreatedAt()).isNotNull();
-        assertThat(response.getUpdatedAt()).isNotNull();
+        assertThat(response.id()).isEqualTo(1L);
+        assertThat(response.ownerId()).isEqualTo(ownerId);
+        assertThat(response.title()).isEqualTo(validRequest.title());
+        assertThat(response.description()).isEqualTo(validRequest.description());
+        assertThat(response.itemsCount()).isZero();
+        assertThat(response.pendingItemsCount()).isZero();
+        assertThat(response.purchasedItemsCount()).isZero();
+        assertThat(response.createdAt()).isNotNull();
+        assertThat(response.updatedAt()).isNotNull();
 
         // Verify
         verify(shoppingListRepository).save(any(ShoppingList.class));
+        verify(mapper).toResponseWithoutItems(any(ShoppingList.class));
     }
 
     @Test
@@ -87,13 +108,29 @@ class CreateShoppingListUseCaseTest {
             return list;
         });
 
+        when(mapper.toResponseWithoutItems(any(ShoppingList.class))).thenAnswer(invocation -> {
+            ShoppingList list = invocation.getArgument(0);
+            return new ShoppingListResponse(
+                    list.getId(),
+                    list.getOwnerId(),
+                    list.getTitle(),
+                    list.getDescription(),
+                    null, // items
+                    list.countTotalItems(),
+                    list.countPendingItems(),
+                    list.countPurchasedItems(),
+                    list.getCreatedAt(),
+                    list.getUpdatedAt()
+            );
+        });
+
         // Act
         ShoppingListResponse response = createShoppingListUseCase.execute(ownerId, requestWithoutDescription);
 
         // Assert
         assertThat(response).isNotNull();
-        assertThat(response.getTitle()).isEqualTo("Lista Rápida");
-        assertThat(response.getDescription()).isNull();
+        assertThat(response.title()).isEqualTo("Lista Rápida");
+        assertThat(response.description()).isNull();
     }
 
     @Test
@@ -106,6 +143,22 @@ class CreateShoppingListUseCaseTest {
             return list;
         });
 
+        when(mapper.toResponseWithoutItems(any(ShoppingList.class))).thenAnswer(invocation -> {
+            ShoppingList list = invocation.getArgument(0);
+            return new ShoppingListResponse(
+                    list.getId(),
+                    list.getOwnerId(),
+                    list.getTitle(),
+                    list.getDescription(),
+                    null, // items
+                    list.countTotalItems(),
+                    list.countPendingItems(),
+                    list.countPurchasedItems(),
+                    list.getCreatedAt(),
+                    list.getUpdatedAt()
+            );
+        });
+
         // Act
         createShoppingListUseCase.execute(ownerId, validRequest);
 
@@ -115,8 +168,8 @@ class CreateShoppingListUseCaseTest {
 
         ShoppingList savedList = listCaptor.getValue();
         assertThat(savedList.getOwnerId()).isEqualTo(ownerId);
-        assertThat(savedList.getTitle()).isEqualTo(validRequest.getTitle());
-        assertThat(savedList.getDescription()).isEqualTo(validRequest.getDescription());
+        assertThat(savedList.getTitle()).isEqualTo(validRequest.title());
+        assertThat(savedList.getDescription()).isEqualTo(validRequest.description());
     }
 
     /**

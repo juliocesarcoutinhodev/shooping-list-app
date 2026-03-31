@@ -109,11 +109,11 @@ class GoogleLoginUseCaseTest {
 
             // Then
             assertThat(response).isNotNull();
-            assertThat(response.getAccessToken()).isEqualTo(ACCESS_TOKEN);
-            assertThat(response.getRefreshToken()).isNotNull();
+            assertThat(response.accessToken()).isEqualTo(ACCESS_TOKEN);
+            assertThat(response.refreshToken()).isNotNull();
             // Valida que é um UUID válido
-            assertThat(response.getRefreshToken()).matches("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
-            assertThat(response.getExpiresIn()).isEqualTo(3600L);
+            assertThat(response.refreshToken()).matches("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
+            assertThat(response.expiresIn()).isEqualTo(3600L);
 
             verify(googleTokenValidator).validate(VALID_ID_TOKEN);
             verify(userRepository).findByEmail(GOOGLE_EMAIL);
@@ -147,11 +147,11 @@ class GoogleLoginUseCaseTest {
 
             // Then
             assertThat(response).isNotNull();
-            assertThat(response.getAccessToken()).isEqualTo(ACCESS_TOKEN);
-            assertThat(response.getRefreshToken()).isNotNull();
+            assertThat(response.refreshToken()).isNotNull();
+            assertThat(response.accessToken()).isEqualTo(ACCESS_TOKEN);
             // Valida que é um UUID válido
-            assertThat(response.getRefreshToken()).matches("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
-            assertThat(response.getExpiresIn()).isEqualTo(3600L);
+            assertThat(response.refreshToken()).matches("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
+            assertThat(response.expiresIn()).isEqualTo(3600L);
 
             verify(googleTokenValidator).validate(VALID_ID_TOKEN);
             verify(userRepository).findByEmail(GOOGLE_EMAIL);

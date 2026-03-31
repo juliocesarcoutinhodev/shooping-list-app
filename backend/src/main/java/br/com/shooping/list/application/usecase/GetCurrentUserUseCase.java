@@ -1,6 +1,7 @@
 package br.com.shooping.list.application.usecase;
 
 import br.com.shooping.list.application.dto.user.UserMeResponse;
+import br.com.shooping.list.application.mapper.UserMapper;
 import br.com.shooping.list.domain.user.User;
 import br.com.shooping.list.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
  * Caso de uso para obter dados do usuário autenticado.
  * <p>
  * Endpoint: GET /api/v1/users/me
+ * Mapeia resposta via UserMapper (MapStruct)
  */
 @Service
 @RequiredArgsConstructor
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class GetCurrentUserUseCase {
 
     private final UserRepository userRepository;
+    private final UserMapper mapper;
 
     /**
      * Busca os dados do usuário autenticado pelo ID extraído do JWT.
@@ -39,15 +42,8 @@ public class GetCurrentUserUseCase {
 
         log.debug("Usuário encontrado: email={}, provider={}", user.getEmail(), user.getProvider());
 
-        return UserMeResponse.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .provider(user.getProvider())
-                .status(user.getStatus())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .build();
+        // Mapear para resposta via MapStruct
+        return mapper.toUserMeResponse(user);
     }
 }
 

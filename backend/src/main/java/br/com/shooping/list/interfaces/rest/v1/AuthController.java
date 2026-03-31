@@ -14,6 +14,7 @@ import br.com.shooping.list.application.usecase.LogoutUseCase;
 import br.com.shooping.list.application.usecase.RefreshTokenUseCase;
 import br.com.shooping.list.application.usecase.RegisterUserUseCase;
 import br.com.shooping.list.infrastructure.security.CookieService;
+import br.com.shooping.list.interfaces.rest.v1.docs.AuthAPI;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -24,16 +25,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Controller REST para operações de autenticação
- * Base path: /api/v1/auth
- *
- * Suporta refresh token via cookie HttpOnly (seguro) e body (dev/test)
+ * Controller REST para operações de autenticação.
+ * Implementa AuthAPI que contém toda a documentação OpenAPI.
  */
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Slf4j
-public class AuthController {
+public class AuthController implements AuthAPI {
 
     private final RegisterUserUseCase registerUserUseCase;
     private final LoginUserUseCase loginUserUseCase;
@@ -42,19 +41,14 @@ public class AuthController {
     private final LogoutUseCase logoutUseCase;
     private final CookieService cookieService;
 
-    /**
-     * Endpoint para registro de novo usuário LOCAL
-     *
-     * @param request dados do usuário (email, nome, senha)
-     * @return usuário criado (sem dados sensíveis)
-     */
     @PostMapping("/register")
+    @Override
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
-        log.info("Requisição de registro recebida para email: {}", request.getEmail());
+        log.info("Requisição de registro recebida para email: {}", request.email());
 
         var response = registerUserUseCase.execute(request);
 
-        log.info("Usuário registrado com sucesso: id={}", response.getId());
+        log.info("Usuário registrado com sucesso: id={}", response.id());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -67,12 +61,13 @@ public class AuthController {
      * @return tokens de acesso e refresh (refresh também vai no cookie)
      */
     @PostMapping("/login")
+    @Override
     public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse
     ) {
-        log.info("Requisição de login recebida para email: {}", request.getEmail());
+        log.info("Requisição de login recebida para email: {}", request.email());
 
         String userAgent = httpRequest.getHeader("User-Agent");
         String ip = extractClientIp(httpRequest);
@@ -80,19 +75,19 @@ public class AuthController {
         var response = loginUserUseCase.execute(request, userAgent, ip);
 
         // Adiciona refresh token no cookie HttpOnly
-        cookieService.addRefreshTokenCookie(httpResponse, response.getRefreshToken());
+        cookieService.addRefreshTokenCookie(httpResponse, response.refreshToken());
 
         // Se cookie-only está ativado, remove refresh token do body (mais seguro)
         if (cookieService.isCookieOnly()) {
             response = new LoginResponse(
-                    response.getAccessToken(),
+                    response.accessToken(),
                     null, // refresh token só no cookie
-                    response.getExpiresIn()
+                    response.expiresIn()
             );
             log.debug("Modo cookie-only ativado: refresh token removido do body");
         }
 
-        log.info("Login realizado com sucesso para email: {}", request.getEmail());
+        log.info("Login realizado com sucesso para email: {}", request.email());
         return ResponseEntity.ok(response);
     }
 
@@ -105,6 +100,7 @@ public class AuthController {
      * @return tokens de acesso e refresh (refresh também vai no cookie)
      */
     @PostMapping("/google")
+    @Override
     public ResponseEntity<LoginResponse> googleLogin(
             @Valid @RequestBody GoogleLoginRequest request,
             HttpServletRequest httpRequest,
@@ -112,10 +108,10 @@ public class AuthController {
     ) {
         log.info("Requisição de login via Google OAuth2 recebida");
 
-        var response = googleLoginUseCase.execute(request.getIdToken(), httpRequest);
+        var response = googleLoginUseCase.execute(request.idToken(), httpRequest);
 
         // Adiciona refresh token no cookie HttpOnly
-        cookieService.addRefreshTokenCookie(httpResponse, response.getRefreshToken());
+        cookieService.addRefreshTokenCookie(httpResponse, response.refreshToken());
 
         log.info("Login via Google realizado com sucesso");
         return ResponseEntity.ok(response);
@@ -123,14 +119,15 @@ public class AuthController {
 
     /**
      * Endpoint para renovar access token usando refresh token
+     * Suporta refresh token via cookie HttpOnly (preferencial) ou body (backward compatibility)
      *
-     *
-     * @param request refresh token a ser validado e rotacionado (opcional se vier no cookie)
-     * @param httpRequest requisição HTTP para extrair metadata e cookie
+     * @param request refresh token no body (opcional se cookie presente)
+     * @param httpRequest requisição HTTP para extrair cookie
      * @param httpResponse resposta HTTP para adicionar novo cookie
-     * @return novo access token e novo refresh token (refresh também vai no cookie)
+     * @return novo access token e novo refresh token (rotação)
      */
     @PostMapping("/refresh")
+    @Override
     public ResponseEntity<RefreshTokenResponse> refresh(
             @RequestBody(required = false) RefreshTokenRequest request,
             HttpServletRequest httpRequest,
@@ -141,12 +138,12 @@ public class AuthController {
         // Prioriza cookie, mas aceita body se não houver cookie (backward compatibility)
         String refreshToken = cookieService.getRefreshTokenFromCookie(httpRequest)
                 .orElseGet(() -> {
-                    if (request == null || request.getRefreshToken() == null || request.getRefreshToken().isBlank()) {
+                    if (request == null || request.refreshToken() == null || request.refreshToken().isBlank()) {
                         log.warn("Refresh token não encontrado nem no cookie nem no body");
                         throw new IllegalArgumentException("Refresh token é obrigatório");
                     }
                     log.debug("Usando refresh token do body (cookie não encontrado)");
-                    return request.getRefreshToken();
+                    return request.refreshToken();
                 });
 
         String userAgent = httpRequest.getHeader("User-Agent");
@@ -156,14 +153,14 @@ public class AuthController {
         var response = refreshTokenUseCase.execute(refreshRequest, userAgent, ip);
 
         // Adiciona novo refresh token no cookie HttpOnly (rotação)
-        cookieService.addRefreshTokenCookie(httpResponse, response.getRefreshToken());
+        cookieService.addRefreshTokenCookie(httpResponse, response.refreshToken());
 
         // Se cookie-only está ativado, remove refresh token do body (mais seguro)
         if (cookieService.isCookieOnly()) {
             response = new RefreshTokenResponse(
-                    response.getAccessToken(),
+                    response.accessToken(),
                     null, // refresh token só no cookie
-                    response.getExpiresIn()
+                    response.expiresIn()
             );
             log.debug("Modo cookie-only ativado: refresh token removido do body");
         }
@@ -182,6 +179,7 @@ public class AuthController {
      * @return 204 No Content
      */
     @PostMapping("/logout")
+    @Override
     public ResponseEntity<Void> logout(
             @RequestBody(required = false) LogoutRequest request,
             HttpServletRequest httpRequest,
@@ -192,12 +190,12 @@ public class AuthController {
         // Prioriza cookie, mas aceita body se não houver cookie (backward compatibility)
         String refreshToken = cookieService.getRefreshTokenFromCookie(httpRequest)
                 .orElseGet(() -> {
-                    if (request == null || request.getRefreshToken() == null || request.getRefreshToken().isBlank()) {
+                    if (request == null || request.refreshToken() == null || request.refreshToken().isBlank()) {
                         log.warn("Refresh token não encontrado nem no cookie nem no body");
                         throw new IllegalArgumentException("Refresh token é obrigatório");
                     }
                     log.debug("Usando refresh token do body (cookie não encontrado)");
-                    return request.getRefreshToken();
+                    return request.refreshToken();
                 });
 
         var logoutRequest = new LogoutRequest(refreshToken);

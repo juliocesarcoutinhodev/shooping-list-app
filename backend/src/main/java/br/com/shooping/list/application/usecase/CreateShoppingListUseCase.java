@@ -2,6 +2,7 @@ package br.com.shooping.list.application.usecase;
 
 import br.com.shooping.list.application.dto.shoppinglist.CreateShoppingListRequest;
 import br.com.shooping.list.application.dto.shoppinglist.ShoppingListResponse;
+import br.com.shooping.list.application.mapper.ShoppingListMapper;
 import br.com.shooping.list.domain.shoppinglist.ShoppingList;
 import br.com.shooping.list.domain.shoppinglist.ShoppingListRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
  * - Validar dados de entrada (via Jakarta Validation)
  * - Delegar criação ao domínio (ShoppingList.create)
  * - Persistir via repositório
- * - Retornar resposta mapeada
+ * - Mapear resposta via ShoppingListMapper (MapStruct)
  */
 @Service
 @RequiredArgsConstructor
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CreateShoppingListUseCase {
 
     private final ShoppingListRepository shoppingListRepository;
+    private final ShoppingListMapper mapper;
 
     /**
      * Cria uma nova lista de compras para o usuário autenticado.
@@ -34,38 +36,21 @@ public class CreateShoppingListUseCase {
      */
     @Transactional
     public ShoppingListResponse execute(Long ownerId, CreateShoppingListRequest request) {
-        log.info("Criando lista de compras: ownerId={}, title={}", ownerId, request.getTitle());
+        log.info("Criando lista de compras: ownerId={}, title={}", ownerId, request.title());
 
         // Delegar criação ao domínio (validações de negócio aplicadas)
         ShoppingList shoppingList = ShoppingList.create(
                 ownerId,
-                request.getTitle(),
-                request.getDescription()
+                request.title(),
+                request.description()
         );
 
         // Persistir
         ShoppingList savedList = shoppingListRepository.save(shoppingList);
         log.info("Lista criada com sucesso: id={}, ownerId={}", savedList.getId(), savedList.getOwnerId());
 
-        // Mapear para resposta
-        return mapToResponse(savedList);
-    }
-
-    /**
-     * Mapeia entidade de domínio para DTO de resposta.
-     */
-    private ShoppingListResponse mapToResponse(ShoppingList list) {
-        return ShoppingListResponse.builder()
-                .id(list.getId())
-                .ownerId(list.getOwnerId())
-                .title(list.getTitle())
-                .description(list.getDescription())
-                .itemsCount(list.countTotalItems())
-                .pendingItemsCount(list.countPendingItems())
-                .purchasedItemsCount(list.countPurchasedItems())
-                .createdAt(list.getCreatedAt())
-                .updatedAt(list.getUpdatedAt())
-                .build();
+        // Mapear para resposta via MapStruct
+        return mapper.toResponseWithoutItems(savedList);
     }
 }
 

@@ -177,17 +177,17 @@ export const ShoppingItemRow: React.FC<ShoppingItemRowProps> = ({
         </View>
       </View>
 
-      {/* Menu Button (3 pontinhos) */}
+      {/* Botão de deletar */}
       {onDelete && (
         <TouchableOpacity
           onPress={() => onDelete(id)}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           accessibilityLabel='Excluir item'
           accessibilityRole='button'
-          testID={testID ? `${testID}-menu` : undefined}
+          testID={testID ? `${testID}-delete` : undefined}
           style={styles.menuButton}
         >
-          <Ionicons name='ellipsis-vertical' size={20} color={theme.colors.textSecondary} />
+          <Ionicons name='trash-outline' size={20} color={theme.colors.error} />
         </TouchableOpacity>
       )}
     </TouchableOpacity>

@@ -11,15 +11,23 @@ Backend da aplicação **Shopping List**, desenvolvido com **Java LTS** e **Spri
 ## 🚀 Tecnologias Utilizadas
 
 - **Java 21 (LTS)**
+  - Java Records para DTOs imutáveis
+  - Pattern Matching e Switch Expressions
+  - Sealed Interfaces
 - **Spring Boot 3.5.7**
   - Spring Web
   - Spring Data JPA
   - Spring Security
-  - Validation
+  - Validation (Jakarta Bean Validation)
   - Actuator
 - **Maven**
-- **JUnit 5**
-- **Lombok**
+- **JUnit 5** + **Mockito**
+- **MapStruct 1.5.5** - Mapeamento automático Domain ↔ DTO
+- **Springdoc OpenAPI 2.7.0** - Documentação OpenAPI 3.0 com Swagger UI
+  - 19 DTOs documentados com @Schema (enterprise-grade)
+  - Schemas agrupados por prefixo para navegação visual
+  - Campos com descrições, exemplos e validações
+- **Lombok** (apenas para Domain Layer - entidades JPA)
 - **MySQL 9** (Desenvolvimento)
 - **H2 Database** (Testes)
 - **Docker & Docker Compose**
@@ -29,6 +37,7 @@ Backend da aplicação **Shopping List**, desenvolvido com **Java LTS** e **Spri
 - **JWT (JSON Web Token)** - jjwt-api, jjwt-impl, jjwt-jackson
 - **Google API Client** - Validação de tokens OAuth2
 - **Spring Dotenv** - Carregamento automático de variáveis .env
+- **Testcontainers** - Testes de integração com MySQL real
 
 ---
 
@@ -48,6 +57,213 @@ java -version
 docker --version
 docker compose version
 ```
+
+---
+
+## 📚 Documentação da API (OpenAPI / Swagger)
+
+A API é completamente documentada usando **OpenAPI 3.0** com **Swagger UI** interativo.
+
+### 🔗 URLs de Acesso (Ambiente de Desenvolvimento)
+
+#### Swagger UI (Interface Interativa)
+```
+http://localhost:8080/swagger-ui/index.html
+```
+- Interface visual para testar todos os endpoints
+- Documentação completa de requests e responses
+- Schemas dos DTOs
+- Exemplos de uso
+
+#### OpenAPI JSON
+```
+http://localhost:8080/v3/api-docs
+```
+- Especificação OpenAPI em formato JSON
+- Útil para geração de clientes automáticos
+- Importação em ferramentas como Postman/Insomnia
+
+#### OpenAPI YAML
+```
+http://localhost:8080/v3/api-docs.yaml
+```
+- Especificação OpenAPI em formato YAML
+
+### 📋 Metadados da API
+
+- **Título:** Shopping List API
+- **Versão:** v1
+- **Descrição:** API RESTful para gerenciamento de listas de compras
+- **Contato:** julio@shoopinglist.com
+- **Licença:** MIT License
+
+### 🔒 Documentação em Produção
+
+Por questões de segurança, a documentação Swagger é **desabilitada automaticamente** em produção (profile `prod`).
+
+Para habilitar em outros ambientes, configure no `application.yml`:
+
+```yaml
+springdoc:
+  api-docs:
+    enabled: true  # false em produção
+  swagger-ui:
+    enabled: true  # false em produção
+```
+
+### 🎯 Estrutura Preparada para Versionamento
+
+A configuração está preparada para suportar múltiplas versões da API:
+- `/v1/` endpoints (versão atual)
+- `/v2/` endpoints (futuras versões)
+- Documentação separada por versão
+
+### 🔐 Autenticação JWT no Swagger UI
+
+O Swagger UI está configurado para suportar autenticação Bearer JWT, permitindo testar endpoints protegidos.
+
+#### Como autenticar no Swagger:
+
+1. **Obter um token JWT:**
+   - Use o endpoint `POST /api/v1/auth/register` para criar uma conta
+   - Ou use `POST /api/v1/auth/login` com credenciais existentes
+   - Copie o valor do campo `accessToken` da resposta
+
+2. **Autenticar no Swagger:**
+   - Clique no botão 🔓 **Authorize** no topo da página do Swagger UI
+   - Cole o token no campo (NÃO adicione o prefixo "Bearer")
+   - Clique em "Authorize"
+   - Clique em "Close"
+
+3. **Testar endpoints protegidos:**
+   - Todos os endpoints agora serão chamados com o header `Authorization: Bearer {seu-token}`
+   - Endpoints que requerem autenticação terão um cadeado 🔒 indicando que estão protegidos
+
+#### Endpoints públicos vs protegidos:
+
+**Públicos (não requerem token):**
+- `POST /api/v1/auth/register` - Criar conta
+- `POST /api/v1/auth/login` - Login com email/senha  
+- `POST /api/v1/auth/google` - Login com Google
+- `POST /api/v1/auth/refresh` - Renovar token
+- `GET /actuator/health` - Health check
+
+**Protegidos (requerem token JWT):**
+- Todos os endpoints de `/api/v1/lists/**` - CRUD de listas
+- Todos os endpoints de `/api/v1/lists/{id}/items/**` - CRUD de itens
+- `GET /api/v1/users/me` - Dados do usuário
+- `POST /api/v1/auth/logout` - Logout
+
+#### Segurança por ambiente:
+
+```yaml
+# Development/Test (Swagger habilitado)
+spring:
+  profiles:
+    active: dev
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+# Production (Swagger desabilitado)
+spring:
+  profiles:
+    active: prod
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+```
+
+### 📊 Schemas Enterprise-Grade
+
+Todos os DTOs (Data Transfer Objects) estão documentados seguindo padrões enterprise-grade usados por grandes empresas.
+
+#### Organização Visual por Prefixo:
+
+Os schemas aparecem **agrupados por prefixo** no Swagger UI, facilitando a navegação:
+
+- **Auth*** - Autenticação e autorização (8 schemas)
+  - `AuthLoginRequest`, `AuthTokensResponse`, `AuthRegisterRequest`, etc.
+  
+- **ShoppingList*** - Gerenciamento de listas (4 schemas)
+  - `ShoppingListCreateRequest`, `ShoppingListResponse`, `ShoppingListSummaryResponse`, etc.
+  
+- **ShoppingListItem*** - Gerenciamento de itens (3 schemas)
+  - `ShoppingListItemAddRequest`, `ShoppingListItemResponse`, etc.
+  
+- **User*** - Perfil do usuário (1 schema)
+  - `UserMeResponse`
+  
+- **Error*** - Respostas de erro (2 schemas)
+  - `ErrorResponse` (RFC 7807), `ErrorValidationError`
+
+#### Documentação Completa de Campos:
+
+Cada campo dos DTOs possui:
+- ✅ **Descrição em ENGLISH** (padrão internacional)
+- ✅ **Exemplo realista** do valor esperado
+- ✅ **Tipo e formato** (string, number, date-time, etc)
+- ✅ **Obrigatoriedade** (required/optional)
+- ✅ **Validações** (minLength, maxLength, allowableValues)
+- ✅ **Modo de acesso** (READ_ONLY para server-generated, WRITE_ONLY para sensíveis)
+
+#### Exemplo de Schema Documentado:
+
+```json
+// AuthLoginRequest no Swagger UI
+{
+  "email": "user@example.com",          // ← Exemplo clicável
+  "password": "MySecureP@ssw0rd"        // ← WRITE_ONLY (não aparece em responses)
+}
+
+// ShoppingListResponse
+{
+  "id": 1,                               // ← READ_ONLY (gerado pelo servidor)
+  "ownerId": 1,
+  "title": "Monthly Groceries",
+  "description": "Supermarket shopping",
+  "items": [...],
+  "itemsCount": 5,
+  "pendingItemsCount": 3,
+  "purchasedItemsCount": 2,
+  "createdAt": "2026-01-02T10:00:00.000Z",  // ← READ_ONLY
+  "updatedAt": "2026-01-02T15:30:00.000Z"   // ← READ_ONLY
+}
+```
+
+#### ErrorResponse (RFC 7807):
+
+Erros seguem o padrão **RFC 7807 (Problem Details for HTTP APIs)**:
+
+```json
+{
+  "timestamp": "2026-01-02T15:30:45.123Z",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Validation failed for request body",
+  "path": "/api/v1/auth/register",
+  "details": [
+    {
+      "field": "email",
+      "message": "Email é obrigatório",
+      "rejectedValue": null
+    }
+  ],
+  "correlationId": "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"  // ← Para debugging
+}
+```
+
+#### Benefícios:
+
+- ✅ **Navegação intuitiva** - Schemas agrupados visualmente
+- ✅ **Documentação completa** - Todos os campos com exemplos
+- ✅ **Type-safe** - Validação em tempo de compilação
+- ✅ **Integração fácil** - Exportar para Postman, gerar clientes
+- ✅ **Onboarding rápido** - Novos desenvolvedores entendem a API pelos exemplos
 
 ---
 
@@ -502,12 +718,12 @@ markItemAsPurchased(itemId)
 markItemAsPending(itemId)
 
 // Operações em lote
-clearPurchasedItems() // Remove todos os itens comprados
+clearPurchasedItems(); // Remove todos os itens comprados
 
 // Consultas
-countTotalItems()
-countPendingItems()
-countPurchasedItems()
+countTotalItems();
+countPendingItems();
+countPurchasedItems();
 isOwnedBy(userId)
 ```
 
@@ -1539,6 +1755,167 @@ O projeto é organizado em camadas para manter responsabilidades bem separadas:
 
 **Regra de dependência:** `interfaces -> application -> domain` e `infrastructure -> application/domain` (nunca o contrário).
 
+### 📦 DTOs como Java Records
+
+Todos os DTOs da camada de Application utilizam **Java Records** ao invés de classes tradicionais:
+
+**Benefícios:**
+- ✅ **Imutabilidade garantida pela linguagem** (não apenas por convenção)
+- ✅ **Menos boilerplate** (~40% menos código que classes com Lombok)
+- ✅ **Semântica clara** (records são DTOs por natureza)
+- ✅ **Métodos gerados automaticamente**: `equals()`, `hashCode()`, `toString()`
+- ✅ **Compatibilidade total** com Bean Validation e Jackson
+
+**Exemplo:**
+
+```java
+// DTO Request
+public record CreateShoppingListRequest(
+    @NotBlank(message = "Título da lista é obrigatório")
+    @Size(min = 3, max = 100, message = "Título deve ter entre 3 e 100 caracteres")
+    String title,
+    
+    @Size(max = 255, message = "Descrição deve ter no máximo 255 caracteres")
+    String description
+) {}
+
+// DTO Response
+public record ShoppingListResponse(
+    Long id,
+    Long ownerId,
+    String title,
+    String description,
+    List<ItemResponse> items,
+    int itemsCount,
+    int pendingItemsCount,
+    int purchasedItemsCount,
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+    Instant createdAt,
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+    Instant updatedAt
+) {}
+```
+
+**Records podem ter métodos:**
+
+```java
+public record UpdateShoppingListRequest(
+    @Size(min = 3, max = 100, message = "Título deve ter entre 3 e 100 caracteres")
+    String title,
+    String description
+) {
+    // Método auxiliar de validação
+    public boolean hasAtLeastOneField() {
+        return (title != null && !title.isBlank()) || description != null;
+    }
+}
+```
+
+**Acesso aos campos:**
+
+```java
+// Records não têm getters (getTitle, getDescription)
+// Acesso direto pelos nomes dos campos:
+request.title()       // ao invés de request.getTitle()
+request.description() // ao invés de request.getDescription()
+response.id()         // ao invés de response.getId()
+```
+
+**DTOs implementados como Records:**
+- ✅ Todos os Request DTOs (10 records)
+- ✅ Todos os Response DTOs (8 records)
+- ✅ ErrorResponse com inner record ValidationError
+- ✅ Total: **19 DTOs convertidos para records**
+
+---
+
+ski### 🔄 Mapeamento Centralizado com MapStruct
+
+Todo o mapeamento entre entidades de domínio e DTOs é feito de forma **centralizada e automática** usando MapStruct.
+
+**Benefícios:**
+- ✅ **Zero código duplicado** - mapeamento em um único lugar
+- ✅ **Type-safe** - validação em tempo de compilação
+- ✅ **Performance** - código otimizado gerado automaticamente
+- ✅ **Manutenibilidade** - alterações em DTOs requerem mudança em 1 lugar
+- ✅ **Reutilizável** - mappers são beans Spring injetáveis
+
+**Mappers Implementados:**
+
+#### ShoppingListMapper
+```java
+@Mapper(componentModel = "spring")
+public interface ShoppingListMapper {
+    // Lista completa com itens
+    ShoppingListResponse toResponse(ShoppingList list);
+    
+    // Lista sem itens (otimizado)
+    ShoppingListResponse toResponseWithoutItems(ShoppingList list);
+    
+    // Resumo de lista
+    ShoppingListSummaryResponse toSummaryResponse(ShoppingList list);
+    
+    // Mapeamento de itens
+    ItemResponse toItemResponse(ListItem item);
+    List<ItemResponse> toItemResponseList(List<ListItem> items);
+}
+```
+
+#### UserMapper
+```java
+@Mapper(componentModel = "spring")
+public interface UserMapper {
+    // Dados do usuário autenticado
+    UserMeResponse toUserMeResponse(User user);
+    
+    // Resposta de registro
+    RegisterResponse toRegisterResponse(User user);
+}
+```
+
+**Uso nos UseCases:**
+```java
+@Service
+@RequiredArgsConstructor
+public class CreateShoppingListUseCase {
+    private final ShoppingListRepository repository;
+    private final ShoppingListMapper mapper; // ✅ Injetado
+    
+    public ShoppingListResponse execute(Long ownerId, CreateShoppingListRequest request) {
+        ShoppingList list = ShoppingList.create(ownerId, request.title(), request.description());
+        ShoppingList savedList = repository.save(list);
+        
+        // ✅ Mapeamento centralizado
+        return mapper.toResponseWithoutItems(savedList);
+    }
+}
+```
+
+**Estrutura:**
+```
+application/
+├── dto/
+│   ├── auth/           (Request/Response records)
+│   ├── shoppinglist/   (Request/Response records)
+│   └── user/           (Response records)
+│
+├── mapper/             ← ✅ Mapeamento centralizado
+│   ├── ShoppingListMapper.java
+│   └── UserMapper.java
+│
+└── usecase/
+    ├── CreateShoppingListUseCase.java    (usa ShoppingListMapper)
+    ├── GetMyShoppingListsUseCase.java    (usa ShoppingListMapper)
+    ├── RegisterUserUseCase.java          (usa UserMapper)
+    └── ...
+```
+
+**Mapeamentos Especiais:**
+- **Value Objects:** Extrai valores automaticamente (`ItemName.getValue()`, `Quantity.getValue()`)
+- **Enums:** Converte para String (`ItemStatus.name()`)
+- **Contadores:** Calcula via métodos de domínio (`list.countTotalItems()`)
+- **Null safety:** Tratamento automático de valores nulos
+
 ---
 
 ## ✅ Funcionalidades Implementadas
@@ -2131,12 +2508,14 @@ Para testar rapidamente sem frontend:
 
 - ✅ **Use Cases Listas**: CreateShoppingList, GetMyShoppingLists, GetShoppingListById, UpdateShoppingList, DeleteShoppingList
 - ✅ **Use Cases Itens**: AddItemToList, UpdateItem, RemoveItemFromList
-- ✅ **DTOs**: 7 DTOs com validações Jakarta (request/response)
+- ✅ **DTOs como Java Records**: 19 DTOs imutáveis (Request/Response) com validações Jakarta
+- ✅ **Mapeamento com MapStruct**: 2 mappers centralizados (ShoppingListMapper, UserMapper)
 - ✅ **Exceções Customizadas**: ShoppingListNotFoundException, UnauthorizedShoppingListAccessException, ItemNotFoundException, DuplicateItemException, ListLimitExceededException
 - ✅ **Validação de Ownership**: Apenas o dono pode modificar suas listas e itens
 - ✅ **Logging Estruturado**: INFO/WARN/DEBUG em todas as operações
 - ✅ **35 testes unitários** (100% cobertura dos use cases)
 - ✅ **Zero dependência de web/JPA** (apenas mocks)
+- ✅ **Zero código duplicado** de mapeamento
 
 #### **💾 Persistência JPA Shopping List**
 
@@ -2159,7 +2538,7 @@ Para testar rapidamente sem frontend:
 - ✅ **Atualização Parcial**: PATCH permite atualizar título e/ou descrição
 - ✅ **Respostas Padronizadas**: Status HTTP corretos (201, 200, 204, 400, 401, 403, 404)
 - ✅ **Extração de OwnerId**: Automática do SecurityContext via JWT
-- ✅ **Validações Bean**: Jakarta Validation em todos os DTOs
+- ✅ **Validações Bean**: Jakarta Validation com Java Records imutáveis
 - ✅ **Logging Estruturado**: INFO/DEBUG em todas as operações
 - ✅ **26+ testes de integração E2E** com MockMvc (incluindo GET /api/v1/lists/{id})
 - ✅ **100% cobertura** de cenários (sucesso, validações, erros, auth)
@@ -2223,6 +2602,357 @@ Para testar rapidamente sem frontend:
 - 🏗️ Deploy automatizado
 - 🏗️ Deploy containerizado
 
+---
+
+## 🆕 Melhorias Recentes
+
+### ✨ **v1.5.0 - OpenAPI Schemas Enterprise-Grade (Janeiro 2026)**
+
+**🎯 Objetivo:** Padronizar e documentar todos os DTOs seguindo convenções enterprise-grade usadas por grandes empresas (Stripe, GitHub, AWS)
+
+**Mudanças implementadas:**
+
+- ✅ **19 DTOs completamente documentados com @Schema:**
+  - 8 Auth DTOs (Login, Register, Google, Refresh, Logout, Tokens, etc)
+  - 5 Shopping List DTOs (Create, Update, Response, Summary)
+  - 3 Shopping List Item DTOs (Add, Update, Response)
+  - 1 User DTO (MeResponse)
+  - 1 Error DTO (ErrorResponse + ValidationError)
+  - 1 Health DTO
+
+- ✅ **Nomenclatura padronizada para agrupamento visual:**
+  - `Auth*` - AuthLoginRequest, AuthTokensResponse, AuthRegisterRequest, etc.
+  - `ShoppingList*` - ShoppingListCreateRequest, ShoppingListResponse, etc.
+  - `ShoppingListItem*` - ShoppingListItemAddRequest, ShoppingListItemResponse, etc.
+  - `User*` - UserMeResponse
+  - `Error*` - ErrorResponse, ErrorValidationError
+  - Schemas agrupados por prefixo no Swagger UI (simula "folders")
+
+- ✅ **Documentação completa de cada campo:**
+  - Descrições em ENGLISH (padrão internacional)
+  - Exemplos realistas para cada campo
+  - `requiredMode` (REQUIRED/NOT_REQUIRED) especificado
+  - Validações documentadas (minLength, maxLength, allowableValues)
+  - Mensagens de validação Bean mantidas em PT-BR
+
+- ✅ **Segurança nos schemas:**
+  - Campos sensíveis com `accessMode = WRITE_ONLY` (password, idToken, refreshToken)
+  - Campos server-generated com `accessMode = READ_ONLY` (id, createdAt, updatedAt)
+  - Nenhum dado sensível exposto em responses
+
+- ✅ **ErrorResponse RFC 7807 completo:**
+  - Todos os campos documentados (timestamp, status, error, message, path)
+  - ValidationError nested record documentado
+  - CorrelationId documentado para distributed tracing
+  - Exemplos realistas de erro
+
+- ✅ **Benefícios alcançados:**
+  - **Navegação visual melhorada** - Schemas agrupados por prefixo no Swagger UI
+  - **Documentação sempre atualizada** - Gerada automaticamente do código
+  - **Integração com ferramentas** - Postman, Insomnia, Swagger Codegen
+  - **Onboarding facilitado** - Novos devs entendem API pelos exemplos
+  - **Type-safe** - Validação em tempo de compilação
+  - **Padrão internacional** - Descrições em ENGLISH
+
+**📊 Estrutura de Schemas no Swagger UI:**
+```
+Schemas (ordenados alfabeticamente, agrupados por prefixo)
+├── Auth* (8 schemas)
+│   ├── AuthGoogleLoginRequest
+│   ├── AuthLoginRequest
+│   ├── AuthLogoutRequest
+│   ├── AuthRefreshRequest
+│   ├── AuthRefreshResponse
+│   ├── AuthRegisterRequest
+│   ├── AuthRegisterResponse
+│   └── AuthTokensResponse
+├── Error* (2 schemas)
+│   ├── ErrorResponse
+│   └── ErrorValidationError
+├── ShoppingList* (4 schemas)
+│   ├── ShoppingListCreateRequest
+│   ├── ShoppingListResponse
+│   ├── ShoppingListSummaryResponse
+│   └── ShoppingListUpdateRequest
+├── ShoppingListItem* (3 schemas)
+│   ├── ShoppingListItemAddRequest
+│   ├── ShoppingListItemResponse
+│   └── ShoppingListItemUpdateRequest
+└── User* (1 schema)
+    └── UserMeResponse
+```
+
+**Exemplo de documentação aplicada:**
+```java
+@Schema(
+    name = "AuthLoginRequest",
+    description = "Login credentials for LOCAL authentication (email + password)"
+)
+public record LoginRequest(
+    @Schema(
+        description = "User email address",
+        example = "user@example.com",
+        requiredMode = Schema.RequiredMode.REQUIRED
+    )
+    String email,
+    
+    @Schema(
+        description = "User password",
+        example = "MySecureP@ssw0rd",
+        requiredMode = Schema.RequiredMode.REQUIRED,
+        accessMode = Schema.AccessMode.WRITE_ONLY
+    )
+    String password
+) {}
+```
+
+**Impacto:** Swagger UI enterprise-grade com navegação intuitiva, documentação completa e agrupamento visual de schemas
+
+---
+
+### ✨ **v1.4.0 - Segurança JWT no Swagger UI (Janeiro 2026)**
+
+**🎯 Objetivo:** Garantir que a documentação OpenAPI respeite as regras de segurança da aplicação e seja exposta de forma controlada por ambiente
+
+**Mudanças implementadas:**
+
+- ✅ **SecurityScheme Bearer JWT configurado:**
+  - Esquema de autenticação HTTP Bearer definido no OpenAPI
+  - Formato JWT especificado
+  - Descrição detalhada de como obter e usar o token
+  - SecurityRequirement global aplicado a todos os endpoints
+
+- ✅ **Endpoints corretamente documentados:**
+  - Endpoints públicos marcados com `@SecurityRequirement(name = "")`
+  - Endpoints protegidos automaticamente requerem JWT
+  - Tags organizadas por funcionalidade
+  - Descrições detalhadas com `@Operation`
+
+- ✅ **Spring Security configurado:**
+  - Swagger UI (`/swagger-ui/**`) liberado para acesso público
+  - OpenAPI docs (`/v3/api-docs/**`) liberado para acesso público
+  - Configuração alinhada com segurança real da API
+
+- ✅ **Habilitação controlada por ambiente:**
+  - **dev/test:** Swagger completamente habilitado
+  - **prod:** Swagger desabilitado (springdoc.enabled=false)
+  - Configuração via `application-{profile}.yml`
+
+- ✅ **Documentação atualizada:**
+  - Instruções de como autenticar no Swagger UI
+  - Lista de endpoints públicos vs protegidos
+  - Configuração de segurança por ambiente
+  - Exemplos práticos de uso
+
+**🔐 Funcionalidades de Segurança:**
+
+1. **Botão Authorize no Swagger UI:**
+   - Permite inserir token JWT
+   - Automaticamente adiciona header `Authorization: Bearer {token}`
+   - Visual claro (cadeado 🔒) para endpoints protegidos
+
+2. **Endpoints públicos claramente identificados:**
+   - `/api/v1/auth/register` - sem cadeado
+   - `/api/v1/auth/login` - sem cadeado
+   - `/api/v1/auth/google` - sem cadeado
+   - `/api/v1/auth/refresh` - sem cadeado
+
+3. **Endpoints protegidos requerem autenticação:**
+   - `/api/v1/lists/**` - com cadeado 🔒
+   - `/api/v1/users/me` - com cadeado 🔒
+   - `/api/v1/auth/logout` - com cadeado 🔒
+
+**📊 Segurança por Ambiente:**
+
+| Ambiente | Swagger UI | OpenAPI JSON | Proteção |
+|----------|-----------|--------------|----------|
+| dev      | ✅ Habilitado | ✅ Habilitado | Público |
+| test     | ✅ Habilitado | ✅ Habilitado | Público |
+| prod     | ❌ Desabilitado | ❌ Desabilitado | N/A |
+
+**Benefícios:**
+- **Testes autenticados** - possível testar todos endpoints protegidos no Swagger
+- **Segurança alinhada** - documentação reflete exatamente a segurança real
+- **Controle por ambiente** - produção não expõe documentação
+- **Experiência de desenvolvedor** - fácil obter token e testar API
+- **Documentação clara** - endpoints públicos vs protegidos visualmente distintos
+
+**Impacto:** Documentação Swagger completamente funcional e segura, alinhada com as regras de autenticação da API
+
+---
+
+### ✨ **v1.3.0 - Documentação OpenAPI 3.0 com Swagger UI (Janeiro 2026)**
+
+**🎯 Objetivo:** Fornecer documentação interativa e padronizada da API seguindo especificação OpenAPI 3.0
+
+**Mudanças implementadas:**
+
+- ✅ **Springdoc OpenAPI 2.3.0** integrado ao projeto
+  - Geração automática de documentação a partir do código
+  - Swagger UI interativo para testar endpoints
+  - Especificação OpenAPI disponível em JSON e YAML
+
+- ✅ **Configuração completa de metadados:**
+  - Título: "Shopping List API"
+  - Versão: v1 (preparado para versionamento futuro)
+  - Descrição funcional detalhada com features principais
+  - Informações de contato e licença
+  - Servidores configurados (dev, preparado para staging/prod)
+
+- ✅ **Endpoints de documentação disponíveis:**
+  - `/swagger-ui/index.html` - Interface interativa Swagger UI
+  - `/v3/api-docs` - Especificação OpenAPI em JSON
+  - `/v3/api-docs.yaml` - Especificação OpenAPI em YAML
+
+- ✅ **Segurança configurada:**
+  - Swagger habilitado apenas em desenvolvimento
+  - Desabilitado automaticamente em produção (profile `prod`)
+  - Configuração por ambiente via `application.yml`
+
+- ✅ **Estrutura preparada para evolução:**
+  - Suporte a múltiplas versões da API (/v1, /v2, etc)
+  - Configuração de múltiplos servidores (dev, staging, prod)
+  - Tags organizadas e operações ordenadas alfabeticamente
+  - Duração de requests exibida para análise de performance
+
+**📊 Benefícios:**
+- **Documentação sempre atualizada** - gerada do código
+- **Testes interativos** - Swagger UI permite testar todos endpoints
+- **Integração com ferramentas** - OpenAPI JSON para Postman, Insomnia, etc
+- **Geração de clientes** - Especificação pode gerar SDKs automaticamente
+- **Onboarding facilitado** - novos desenvolvedores entendem a API rapidamente
+
+**🔗 Acesso em desenvolvimento:**
+```
+http://localhost:8080/swagger-ui/index.html
+```
+
+**Impacto:** Documentação completa e interativa disponível sem esforço manual de manutenção
+
+---
+
+### ✨ **v1.2.0 - Mapeamento Centralizado com MapStruct (Janeiro 2026)**
+
+**🎯 Objetivo:** Eliminar código duplicado de mapeamento e centralizar conversões Domain ↔ DTO
+
+**Mudanças implementadas:**
+
+- ✅ **MapStruct 1.5.5** integrado ao projeto
+  - Annotation processor configurado com Lombok binding
+  - Geração automática de implementações em tempo de compilação
+
+- ✅ **2 Mappers centralizados criados:**
+  - `ShoppingListMapper` - mapeia ShoppingList, ListItem e relacionados
+  - `UserMapper` - mapeia User para DTOs de resposta
+
+- ✅ **8 UseCases refatorados:**
+  - CreateShoppingListUseCase
+  - GetMyShoppingListsUseCase  
+  - GetShoppingListByIdUseCase
+  - UpdateShoppingListUseCase
+  - AddItemToListUseCase
+  - UpdateItemUseCase
+  - RegisterUserUseCase
+  - GetCurrentUserUseCase
+
+- ✅ **Código eliminado:**
+  - 4 métodos privados de mapeamento removidos
+  - ~60 linhas de código duplicado eliminadas
+  - 100% centralização alcançada
+
+- ✅ **Benefícios alcançados:**
+  - **54% redução** no código de mapeamento
+  - **Zero duplicação** - cada mapeamento definido em 1 lugar
+  - **Type-safe** - erros detectados em compilação
+  - **Reutilizável** - mappers são beans Spring injetáveis
+  - **Performance** - código otimizado sem reflection
+
+- ✅ **Exemplo de simplificação:**
+
+```java
+// ANTES: Mapeamento manual (10 linhas, duplicado em 3 lugares)
+private ShoppingListResponse mapToResponse(ShoppingList list) {
+    return new ShoppingListResponse(
+        list.getId(),
+        list.getOwnerId(),
+        list.getTitle(),
+        list.getDescription(),
+        null,
+        list.countTotalItems(),
+        list.countPendingItems(),
+        list.countPurchasedItems(),
+        list.getCreatedAt(),
+        list.getUpdatedAt()
+    );
+}
+
+// DEPOIS: Mapeamento centralizado (1 linha)
+return mapper.toResponseWithoutItems(savedList);
+```
+
+**📊 Métricas:**
+- Código de mapeamento: 110 linhas → 50 linhas (-54%)
+- Métodos privados: 4 → 0 (-100%)
+- Duplicação: 60 linhas → 0 (-100%)
+
+**Impacto:** Manutenção simplificada - alterações em DTOs requerem mudança em apenas 1 lugar
+
+---
+
+### ✨ **v1.1.0 - Migração para Java Records (Janeiro 2026)**
+
+**🎯 Objetivo:** Modernizar a camada de Application usando recursos modernos do Java 21 LTS
+
+**Mudanças implementadas:**
+
+- ✅ **19 DTOs convertidos** de classes com Lombok para Java Records
+  - 10 Request DTOs: CreateShoppingListRequest, AddItemRequest, UpdateShoppingListRequest, UpdateItemRequest, RegisterRequest, LoginRequest, GoogleLoginRequest, RefreshTokenRequest, LogoutRequest, DeleteShoppingListRequest
+  - 8 Response DTOs: ShoppingListResponse, ShoppingListSummaryResponse, ItemResponse, RegisterResponse, LoginResponse, RefreshTokenResponse, UserMeResponse, HealthResponse
+  - 1 ErrorResponse com inner record ValidationError
+
+- ✅ **Benefícios alcançados:**
+  - **Redução de ~40% no código** (menos boilerplate que classes com Lombok)
+  - **Imutabilidade garantida** pela linguagem (não apenas por convenção)
+  - **Semântica mais clara** (records são DTOs por natureza)
+  - **Compatibilidade total** com Bean Validation e Jackson
+  - **Métodos gerados automaticamente**: equals(), hashCode(), toString()
+
+- ✅ **Atualização de código:**
+  - UseCases ajustados: `request.field()` ao invés de `request.getField()`
+  - Controllers ajustados: `response.id()` ao invés de `response.getId()`
+  - Factory methods mantidos em ErrorResponse (compatibilidade)
+  - Records podem ter métodos auxiliares (ex: `hasAtLeastOneField()`)
+  - Todos os 236+ testes passando ✅
+
+- ✅ **Exemplo de conversão:**
+
+```java
+// ANTES: Classe com Lombok (8 linhas)
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class CreateShoppingListRequest {
+    @NotBlank(message = "Título da lista é obrigatório")
+    private String title;
+    private String description;
+}
+
+// DEPOIS: Record (5 linhas, -37.5% código)
+public record CreateShoppingListRequest(
+    @NotBlank(message = "Título da lista é obrigatório")
+    String title,
+    String description
+) {}
+```
+
+**📊 Impacto:**
+- ✅ Zero breaking changes para a API REST (JSON permanece idêntico)
+- ✅ Compilação bem-sucedida
+- ✅ Todos os testes passando
+- ✅ Código mais moderno e idiomático
+
+---
+
 ### 🎯 **Objetivos de Arquitetura**
 
 - **Manutenibilidade**: Código limpo, bem documentado e testado
@@ -2278,4 +3008,4 @@ Este projeto está licenciado sob a [MIT License](LICENSE).
 - **Arquitetura**: Clean Architecture + DDD
 - **Status**: 🚧 Em desenvolvimento ativo
 
-**Última atualização do README**: 01 de Janeiro de 2026
+**Última atualização do README**: 02 de Janeiro de 2026

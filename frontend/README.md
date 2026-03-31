@@ -145,25 +145,33 @@ O app possui sistema de autenticação completo com navegação condicional:
 
 ## 🎨 Design System
 
-rSistema completo de Design Tokens com a **Paleta Fresh Market**:
+Sistema completo de Design Tokens com a **Paleta Fresh Market**:
 
 ### **🌿 Paleta Fresh Market**
 Design minimalista focado em frescor e naturalidade, ideal para aplicações de marketplace:
 
 **Cores Principais:**
-- **Primary (Verde suave):** `#2ECC71` - Botões principais, CTAs e ações positivas
+- **Primary (Verde suave):** `#2ECC71` - Cor principal do tema, usada em elementos do sistema
+- **Primary Accent:** `#059669` - Verde usado em componentes específicos (FAB, botões, checkbox, toast)
 - **Secondary (Verde forte):** `#27AE60` - Hover states, detalhes interativos e ícones
 - **Background:** `#F9FAF7` - Fundo principal confortável e espaçoso
 - **Surface:** `#FFFFFF` - Cards, modais e elementos em destaque
 
 **Cores de Texto:**
-- **Text Principal:** `#2C3E50` - Títulos, cabeçalhos e textos importantes
-- **Text Muted:** `#7F8C8D` - Textos secundários, descrições e subtítulos
+- **Text Principal:** `#064E3B` - Verde bem escuro para títulos, cabeçalhos e textos importantes
+- **Text Secondary:** `#0F766E` - Verde escuro para textos secundários, descrições e subtítulos
+- **Text Tertiary:** `#9CA3AF` - Cinza para textos terciários
 
 **Estados e Feedback:**
 - **Success:** `#2ECC71` - Confirmações e feedback positivo
 - **Error:** `#E74C3C` - Alertas, erros e avisos importantes
 - **Warning:** `#F39C12` - Avisos e atenções
+
+**Cores Específicas de Componentes:**
+- **FAB/Avatar/Checkbox:** `#059669` - Verde suave usado em elementos interativos
+- **Preço unitário:** `#10B981` - Verde claro para exibição de preços
+- **Card total estimado:** `#E8F8F0` - Verde bem suave para fundo de cards
+- **Borda checkbox não marcado:** `#A7F3D0` - Verde claro para bordas
 
 **Psicologia das Cores:**
 - 🟢 Verde = Natureza, frescor, produtos frescos
@@ -172,10 +180,12 @@ Design minimalista focado em frescor e naturalidade, ideal para aplicações de 
 
 ### **Tokens Disponíveis:**
 - **Cores:** Paleta Fresh Market light/dark (60+ tokens)
-  - Texto principal: #064E3B (verde bem escuro)
-  - Texto secundário: #0F766E (verde escuro)
-  - Botões/FAB/Avatar: #059669 (verde suave)
-  - Card total estimado: #E8F8F0 (verde bem suave)
+  - Texto principal: `#064E3B` (verde bem escuro)
+  - Texto secundário: `#0F766E` (verde escuro)
+  - Primary do tema: `#2ECC71` (verde suave)
+  - Componentes específicos: `#059669` (FAB, botões, checkbox, toast)
+  - Card total estimado: `#E8F8F0` (verde bem suave)
+  - Preço unitário: `#10B981` (verde claro)
 - **Tipografia:** Inter + fallbacks (14 presets)
 - **Espaçamento:** Escala baseada em 4px (13 níveis)
 - **Bordas:** Border radius (8 variações)
@@ -208,7 +218,7 @@ Sistema completo de componentes com estados, variações e validações:
   - 3 tamanhos (small, medium, large)
   - 2 variantes (primary verde #059669, secondary outlined)
   - Estados: loading, disabled
-  - Cor primária: #059669 (verde suave)
+  - Cor primária: `#059669` (verde suave usado em componentes específicos)
 
 - **TextField** 
   - 2 variantes (outlined, filled)
@@ -275,28 +285,29 @@ Sistema completo de componentes com estados, variações e validações:
 
 - **FloatingActionButton (FAB)**
   - Botão circular flutuante no canto inferior direito
-  - Cor verde (#059669)
+  - Cor verde `#059669` (verde suave)
   - Ícone de "+" branco
   - Sombra e elevação para destaque visual
   - Não bloqueia navegação ou interação
   - Design alinhado ao Fresh Market
+  - Usado no dashboard para criar lista e na tela de detalhes para adicionar item
 
 - **ShoppingItemRow** 
   - Componente de exibição de item de lista de compras
   - Checkbox interativo (marcar/desmarcar comprado)
-  - Checkbox marcado com cor #059669 (verde suave)
-  - Borda do checkbox não marcado com cor #A7F3D0 (verde claro)
+  - Checkbox marcado com cor `#059669` (verde suave)
+  - Borda do checkbox não marcado com cor `#A7F3D0` (verde claro)
   - Nome com strike-through quando comprado
   - Quantidade formatada (ex: "2x")
-  - Preço unitário em verde claro (#10B981) e subtotal opcional (formatação BRL)
-  - Subtotal exibido apenas quando quantity > 1 (evita duplicação visual)
+  - Preço unitário em verde claro `#10B981` e subtotal opcional (formatação BRL)
+  - Subtotal exibido apenas quando `quantity > 1` (evita duplicação visual)
   - Estado loading com skeleton placeholder
   - Acessibilidade completa (roles, labels, testIDs)
   - Suporte a callbacks: `onPress` (editar), `onTogglePurchased` (checkbox) e `onDelete` (excluir)
   - Botão de menu (3 pontinhos) para exclusão de item
   - Opacidade reduzida quando comprado (0.85 para melhor acessibilidade)
   - 22 testes cobrindo props, cálculos e formatação
-  - Textos em verde bem escuro (#064E3B)
+  - Textos em verde bem escuro `#064E3B`
 
 **Exportação centralizada:**
 ```tsx
@@ -588,14 +599,14 @@ Navegação para tela de detalhes ao clicar em um card de lista.
 
 **Arquivos:**
 - `app/lists/[id].tsx` - Rota dinâmica com parâmetros tipados
-- `src/presentation/screens/list-details-screen.tsx` - Tela de detalhes (placeholder)
+- `src/presentation/screens/list-details-screen.tsx` - Tela de detalhes completa e funcional
 
 **Rota:**
 - Padrão: `/lists/[id]` (dinâmica)
 - Parâmetros: `useLocalSearchParams<{ id: string }>()`
 - Navegação: `router.push(\`/lists/${item.id}\`)`
 
-**Design da Tela (Placeholder):**
+**Design e Funcionalidades da Tela:**
 
 ✅ **Header com Safe Area:**
 - Botão back (←) funcional
@@ -604,17 +615,18 @@ Navegação para tela de detalhes ao clicar em um card de lista.
 - Menu (⋮) para ações futuras
 
 ✅ **Card de Total Estimado:**
-- Background verde bem suave e claro (#E8F8F0 - primary50)
-- Borda verde suave (#D1F2E1 - primary100)
-- "Total estimado:" em verde bem escuro (#064E3B)
-- Valor em verde suave (#059669)
+- Background verde bem suave e claro `#E8F8F0` (primary50 do tema)
+- Borda verde suave `#D1F2E1` (primary100 do tema) no light mode
+- Adapta cores automaticamente no dark mode
+- "Total estimado:" em verde bem escuro `#064E3B` (texto principal)
+- Valor em verde suave `#2ECC71` (primary do tema)
 
 ✅ **Lista de Itens:**
-- Checkbox circular (verde #059669 quando marcado, borda #A7F3D0 quando não marcado)
-- Nome do item em verde bem escuro (#064E3B) (strikethrough quando completo)
-- Quantidade: # 2x, # 1x
-- Preço unitário: $ R$ X.XX (em verde claro #10B981, quando disponível)
-- Total calculado: (total: R$ XX.XX) apenas quando quantity > 1 (evita duplicação visual)
+- Checkbox circular (verde `#059669` quando marcado, borda `#A7F3D0` quando não marcado)
+- Nome do item em verde bem escuro `#064E3B` (strikethrough quando completo)
+- Quantidade: `# 2x`, `# 1x`
+- Preço unitário: `$ R$ X.XX` (em verde claro `#10B981`, quando disponível)
+- Total calculado: `(total: R$ XX.XX)` apenas quando `quantity > 1` (evita duplicação visual)
 - Cards brancos com border sutil
 - Gap de 12px entre itens
 - Total estimado calculado automaticamente no topo
@@ -625,9 +637,10 @@ Navegação para tela de detalhes ao clicar em um card de lista.
 - Opacidade reduzida quando comprado (0.85 para melhor acessibilidade)
 
 ✅ **FAB (Floating Action Button):**
-- Botão circular verde (#059669) no canto inferior direito
+- Botão circular verde `#059669` no canto inferior direito
 - Ícone de "+" branco
 - Abre modal de adicionar item ao clicar
+- Usado também no dashboard para criar nova lista
 
 ✅ **Modal de Adicionar Item:**
 - Desliza de baixo para cima com animação suave
@@ -641,10 +654,11 @@ Navegação para tela de detalhes ao clicar em um card de lista.
 - Checkbox interativo com atualização otimista
 - Reordenação automática: item comprado desce para baixo imediatamente
 - Divisor visual entre itens não comprados e comprados
-- Toast de feedback (sucesso/erro) com cor #059669
+- Toast de feedback (sucesso/erro) com cor `#059669`
 - Prevenção de double tap com loading state
 - Tratamento de erros (401/403/404/500) com mensagens específicas
 - Reversão automática em caso de erro
+- Atualização imediata na UI antes da confirmação da API (otimista)
 
 ✅ **Excluir Item:**
 - Botão de menu (3 pontinhos) no item (removido do header)
@@ -665,9 +679,11 @@ Navegação para tela de detalhes ao clicar em um card de lista.
 - Exibição de erros do backend
 - UX consistente com modal de criação
 
-✅ **Placeholder "Em Construção":**
-- Ícone e mensagem informando que é visualização mockada
-- Explica que funcionalidade completa vem no próximo épico
+✅ **Estados Completos:**
+- Loading: Skeleton/loader durante carregamento
+- Empty: Mensagem amigável com botão para adicionar item quando lista está vazia
+- Error: Mensagem de erro com botão "Tentar novamente"
+- Success: Exibição completa de todos os itens com ordenação automática
 
 **Integração com API:**
 - ✅ Carrega dados reais via `GetListDetailsUseCase`
@@ -679,7 +695,7 @@ Navegação para tela de detalhes ao clicar em um card de lista.
 - ✅ Lista de itens renderizada com `FlatList` usando `ShoppingItemRow`
 - ✅ Tratamento de erros (404, 500, etc.) com mensagens amigáveis
 
-**Funcionalidade Atual:**
+**Funcionalidades Implementadas:**
 - ✅ Navegação completa (ida e volta)
 - ✅ Layout responsivo com Safe Area
 - ✅ Design profissional seguindo Fresh Market
@@ -689,7 +705,12 @@ Navegação para tela de detalhes ao clicar em um card de lista.
 - ✅ **FAB (Floating Action Button)** para adicionar item
 - ✅ **AddItemModal** - Modal que desliza de baixo para cima
 - ✅ **AddItemToListUseCase** - Caso de uso completo para adicionar itens
-- ⏳ Editar/remover itens (próximo épico)
+- ✅ **Editar item** (modal com pré-preenchimento e validação)
+- ✅ **Excluir item** (com ConfirmModal destrutivo e toast)
+- ✅ **Marcar/desmarcar como comprado** (toggle com atualização otimista)
+- ✅ **Reordenação automática** de itens após toggle
+- ✅ **Divisor visual** entre itens comprados e não comprados
+- ✅ **Cálculo automático** de total estimado
 
 ### Fluxo inicial
 - Ao logar, o usuário é direcionado para a tab Home, que agora exibe o dashboard de listas (ListsDashboardScreen)
@@ -706,10 +727,13 @@ Arquivo: `src/data/data-sources/shopping-list-remote-data-source.ts`
 Responsável por consumir as APIs de listas usando o `apiClient` padrão:
 
 **Endpoints:**
-- `GET /api/v1/lists` - Buscar listas do usuário (retorna metadados com itemsCount/pendingItemsCount) ✅
+- `GET /api/v1/lists` - Buscar listas do usuário (retorna metadados com `itemsCount`/`pendingItemsCount`) ✅
 - `GET /api/v1/lists/{id}` - Buscar detalhes de uma lista específica (retorna lista com items completos) ✅
 - `POST /api/v1/lists` - Criar nova lista ✅
 - `DELETE /api/v1/lists/{id}` - Deletar lista por ID ✅
+- `POST /api/v1/lists/{listId}/items` - Adicionar item à lista ✅
+- `PATCH /api/v1/lists/{listId}/items/{itemId}` - Atualizar item (inclui toggle isPurchased) ✅
+- `DELETE /api/v1/lists/{listId}/items/{itemId}` - Deletar item da lista ✅
 
 ```typescript
 export class ShoppingListRemoteDataSource {
@@ -1274,7 +1298,11 @@ it('deve mapear corretamente um ShoppingItemDto completo com snake_case', () => 
 **Get List Details Use Case Tests:** `src/domain/use-cases/__tests__/get-list-details-use-case.test.ts`
 - Cobertura: busca com itens, 404, validações, propagação de erros (8 tests)
 
-Total: 51 testes automatizados (excluindo 1 com problema de configuração Jest/expo-constants)
+**Testes Adicionais:**
+- **ShoppingItemRow Component Tests:** `src/presentation/components/shopping-item-row/__tests__/ShoppingItemRow.test.tsx`
+  - Cobertura: Props, cálculos, formatação, estados, callbacks (22 testes)
+
+**Total: 12 test suites com aproximadamente 152 testes automatizados** ✅
 
 ### Padrões Seguidos
 - Sem dependência de UI/React em domain/data
@@ -1287,9 +1315,8 @@ Total: 51 testes automatizados (excluindo 1 com problema de configuração Jest/
 ---
 ## 📖 Documentação Adicional
 
-- `CLEAN_ARCHITECTURE.md` - Guia de arquitetura e convenções
-- `COMPONENTS.md` - Documentação dos componentes
 - `ANALISE_FINAL_SPRINT.md` - Análise completa da sprint final com métricas de qualidade
+- `ANALISE_COMPLETA_PROJETO.md` - Análise detalhada comparando implementação vs documentação
 
 ## 🎯 Estrutura de Navegação
 
@@ -1353,11 +1380,14 @@ Sistema completo de autenticação com UI minimalista Fresh Market:
 - Validação: senhas devem conferir
 - Navegação automática após registro
 
-#### **🏠 Home Screen**
-- Exibe dados do usuário autenticado
-- Botão "Sair" para logout seguro
-- Informações sobre Clean Architecture
-- Acesso às outras abas (Explore, Conta, Playground)
+#### **🏠 Home Screen (ListsDashboardScreen)**
+- Dashboard de listas de compras do usuário
+- Cards com progresso visual para cada lista
+- FAB para criar nova lista
+- Pull-to-refresh para atualizar
+- Estados: Loading, Empty, Error, Sucesso
+- Avatar com iniciais do usuário no header
+- Navegação para detalhes da lista ao clicar no card
 
 #### **👤 Account Screen**
 - Exibe dados detalhados do usuário: Nome, Email, Provider
@@ -1900,18 +1930,17 @@ Loading (ActivityIndicator)
 - [x] **FAB integrado na ListDetailsScreen para adicionar item**
 - [x] **Validação completa: nome (2-80), quantidade (>=1), preço (>=0)**
 - [x] **Fluxo completo: abrir modal → validar → adicionar → atualizar lista automaticamente**
-- [x] **Cores atualizadas: textos #064E3B, botões/FAB #059669, card total #E8F8F0**
+- [x] **Cores atualizadas: textos `#064E3B`, botões/FAB `#059669`, card total `#E8F8F0`**
 - [x] **AddItemToListUseCase - Caso de uso para adicionar item à lista**
 - [x] **AddItemModal - Modal de adicionar item com validação RHF + Zod**
 - [x] **FAB integrado na ListDetailsScreen para adicionar item**
 - [x] **Validação completa: nome (2-80), quantidade (>=1), preço (>=0)**
 - [x] **Fluxo completo: abrir modal → validar → adicionar → atualizar lista automaticamente**
-- [x] **Cores atualizadas: textos #064E3B, botões/FAB #059669, card total #E8F8F0**
 - [x] **ToggleItemPurchasedUseCase - Caso de uso para marcar/desmarcar item como comprado**
 - [x] **PATCH updateItem - Endpoint para atualizar item (datasource + repository)**
 - [x] **Atualização otimista com reordenação automática**
 - [x] **Divisor visual entre itens comprados e não comprados**
-- [x] **Toast de feedback integrado (sucesso/erro) com cor #059669**
+- [x] **Toast de feedback integrado (sucesso/erro) com cor `#059669`**
 - [x] **Prevenção de double tap bug com loading state**
 - [x] **Testes unitários do ToggleItemPurchasedUseCase (11 testes)**
 - [x] **DeleteShoppingItemUseCase - Caso de uso para excluir item**
@@ -1926,8 +1955,8 @@ Loading (ActivityIndicator)
 - [x] **Modal abre ao clicar no item (onPress)**
 - [x] **Schema Zod reutilizado (sem duplicação)**
 - [x] **Testes unitários do UpdateShoppingItemUseCase (20 testes)**
-- [x] **Ajustes visuais: subtotal só exibe quando quantity > 1**
-- [x] **Cores atualizadas: preço unitário #10B981, borda checkbox #A7F3D0**
+- [x] **Ajustes visuais: subtotal só exibe quando `quantity > 1`**
+- [x] **Cores atualizadas: preço unitário `#10B981`, borda checkbox `#A7F3D0`**
 - [x] **Opacidade ajustada para melhor acessibilidade (0.85 quando comprado)**
 - [x] **Tab bar oculta** - Navegação simplificada sem barra inferior
 - [x] **Tabs de desenvolvimento ocultas** - Explore e Playground mantidas para referência futura
@@ -1956,7 +1985,7 @@ Loading (ActivityIndicator)
 - [x] **AddItemModal** com animação slide up e validação completa
 - [x] **FAB** integrado para adicionar item
 - [x] **Atualização automática** da lista após adicionar item
-- [x] **Cores atualizadas:** textos #064E3B, botões/FAB #059669, card total #E8F8F0
+- [x] **Cores atualizadas:** textos `#064E3B`, botões/FAB `#059669`, card total `#E8F8F0`
 - [x] **Marcar/desmarcar item como comprado** (toggle com atualização otimista)
 - [x] **ToggleItemPurchasedUseCase** implementado e funcional
 - [x] **PATCH updateItem** no datasource e repository

@@ -2,6 +2,7 @@ package br.com.shooping.list.application.usecase;
 
 import br.com.shooping.list.application.dto.shoppinglist.AddItemRequest;
 import br.com.shooping.list.application.dto.shoppinglist.ItemResponse;
+import br.com.shooping.list.application.mapper.ShoppingListMapper;
 import br.com.shooping.list.domain.shoppinglist.*;
 import br.com.shooping.list.infrastructure.exception.ShoppingListNotFoundException;
 import br.com.shooping.list.infrastructure.exception.UnauthorizedShoppingListAccessException;
@@ -18,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
  * - Validar ownership (apenas dono pode adicionar itens)
  * - Delegar criação ao domínio (ShoppingList.addItem)
  * - Persistir alterações
- * - Retornar item criado
+ * - Mapear resposta via ShoppingListMapper (MapStruct)
  */
 @Service
 @RequiredArgsConstructor
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AddItemToListUseCase {
 
     private final ShoppingListRepository shoppingListRepository;
+    private final ShoppingListMapper mapper;
 
     /**
      * Adiciona um novo item em uma lista de compras.
@@ -42,7 +44,7 @@ public class AddItemToListUseCase {
     @Transactional
     public ItemResponse execute(Long ownerId, Long listId, AddItemRequest request) {
         log.info("Adicionando item na lista: listId={}, ownerId={}, itemName={}",
-                listId, ownerId, request.getName());
+                listId, ownerId, request.name());
 
         // Buscar lista
         ShoppingList list = shoppingListRepository.findById(listId)
@@ -59,9 +61,9 @@ public class AddItemToListUseCase {
         }
 
         // Delegar criação ao domínio (valida duplicatas e limite)
-        ItemName itemName = ItemName.of(request.getName());
-        Quantity quantity = Quantity.of(request.getQuantity());
-        ListItem item = list.addItem(itemName, quantity, request.getUnit(), request.getUnitPrice());
+        ItemName itemName = ItemName.of(request.name());
+        Quantity quantity = Quantity.of(request.quantity());
+        ListItem item = list.addItem(itemName, quantity, request.unit(), request.unitPrice());
 
         // Persistir alterações (flush para gerar IDs)
         ShoppingList savedList = shoppingListRepository.save(list);
@@ -73,19 +75,10 @@ public class AddItemToListUseCase {
                 .orElse(item);
 
         log.info("Item adicionado com sucesso: listId={}, itemId={}, itemName={}",
-                listId, savedItem.getId(), request.getName());
+                listId, savedItem.getId(), request.name());
 
-        // Mapear para resposta
-        return ItemResponse.builder()
-                .id(savedItem.getId())
-                .name(savedItem.getName().getValue())
-                .quantity(savedItem.getQuantity())
-                .unit(savedItem.getUnit())
-                .unitPrice(savedItem.getUnitPrice())
-                .status(savedItem.getStatus().name())
-                .createdAt(savedItem.getCreatedAt())
-                .updatedAt(savedItem.getUpdatedAt())
-                .build();
+        // Mapear para resposta via MapStruct
+        return mapper.toItemResponse(savedItem);
     }
 }
 

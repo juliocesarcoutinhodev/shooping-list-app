@@ -87,8 +87,8 @@ class LoginUserUseCaseTest {
 
         when(jwtProperties.getAccessToken()).thenReturn(accessTokenConfig);
         when(jwtProperties.getRefreshToken()).thenReturn(refreshTokenConfig);
-        when(userRepository.findByEmail(validRequest.getEmail())).thenReturn(Optional.of(validUser));
-        when(passwordEncoder.matches(validRequest.getPassword(), validUser.getPasswordHash())).thenReturn(true);
+        when(userRepository.findByEmail(validRequest.email())).thenReturn(Optional.of(validUser));
+        when(passwordEncoder.matches(validRequest.password(), validUser.getPasswordHash())).thenReturn(true);
         when(jwtService.generateAccessToken(validUser)).thenReturn("access.token.jwt");
         when(refreshTokenRepository.save(any(RefreshToken.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -97,13 +97,13 @@ class LoginUserUseCaseTest {
 
         // Assert
         assertThat(response).isNotNull();
-        assertThat(response.getAccessToken()).isEqualTo("access.token.jwt");
-        assertThat(response.getRefreshToken()).isNotNull().isNotEmpty();
-        assertThat(response.getExpiresIn()).isEqualTo(900L); // 15 minutos
+        assertThat(response.accessToken()).isEqualTo("access.token.jwt");
+        assertThat(response.refreshToken()).isNotNull().isNotEmpty();
+        assertThat(response.expiresIn()).isEqualTo(900L); // 15 minutos
 
         // Verify
-        verify(userRepository).findByEmail(validRequest.getEmail());
-        verify(passwordEncoder).matches(validRequest.getPassword(), validUser.getPasswordHash());
+        verify(userRepository).findByEmail(validRequest.email());
+        verify(passwordEncoder).matches(validRequest.password(), validUser.getPasswordHash());
         verify(jwtService).generateAccessToken(validUser);
         verify(refreshTokenRepository).save(any(RefreshToken.class));
     }
@@ -132,7 +132,7 @@ class LoginUserUseCaseTest {
 
         RefreshToken savedToken = tokenCaptor.getValue();
         assertThat(savedToken.getTokenHash()).isNotNull();
-        assertThat(savedToken.getTokenHash()).isNotEqualTo(response.getRefreshToken()); // Hash é diferente do token
+        assertThat(savedToken.getTokenHash()).isNotEqualTo(response.refreshToken()); // Hash é diferente do token
         assertThat(savedToken.getUser()).isEqualTo(validUser);
         assertThat(savedToken.getUserAgent()).isEqualTo("Mozilla/5.0");
         assertThat(savedToken.getIp()).isEqualTo("192.168.1.1");
@@ -143,7 +143,7 @@ class LoginUserUseCaseTest {
     @DisplayName("Deve lançar exceção quando usuário não encontrado")
     void shouldThrowExceptionWhenUserNotFound() {
         // Arrange
-        when(userRepository.findByEmail(validRequest.getEmail())).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(validRequest.email())).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThatThrownBy(() -> loginUserUseCase.execute(validRequest, "Mozilla/5.0", "192.168.1.1"))
@@ -151,7 +151,7 @@ class LoginUserUseCaseTest {
                 .hasMessageContaining("Email ou senha não conferem");
 
         // Verify
-        verify(userRepository).findByEmail(validRequest.getEmail());
+        verify(userRepository).findByEmail(validRequest.email());
         verify(passwordEncoder, never()).matches(anyString(), anyString());
         verify(jwtService, never()).generateAccessToken(any());
         verify(refreshTokenRepository, never()).save(any());
@@ -161,8 +161,8 @@ class LoginUserUseCaseTest {
     @DisplayName("Deve lançar exceção quando senha incorreta")
     void shouldThrowExceptionWhenPasswordIncorrect() {
         // Arrange
-        when(userRepository.findByEmail(validRequest.getEmail())).thenReturn(Optional.of(validUser));
-        when(passwordEncoder.matches(validRequest.getPassword(), validUser.getPasswordHash())).thenReturn(false);
+        when(userRepository.findByEmail(validRequest.email())).thenReturn(Optional.of(validUser));
+        when(passwordEncoder.matches(validRequest.password(), validUser.getPasswordHash())).thenReturn(false);
 
         // Act & Assert
         assertThatThrownBy(() -> loginUserUseCase.execute(validRequest, "Mozilla/5.0", "192.168.1.1"))
@@ -170,8 +170,8 @@ class LoginUserUseCaseTest {
                 .hasMessageContaining("Email ou senha não conferem");
 
         // Verify
-        verify(userRepository).findByEmail(validRequest.getEmail());
-        verify(passwordEncoder).matches(validRequest.getPassword(), validUser.getPasswordHash());
+        verify(userRepository).findByEmail(validRequest.email());
+        verify(passwordEncoder).matches(validRequest.password(), validUser.getPasswordHash());
         verify(jwtService, never()).generateAccessToken(any());
         verify(refreshTokenRepository, never()).save(any());
     }
@@ -185,8 +185,8 @@ class LoginUserUseCaseTest {
         statusField.setAccessible(true);
         statusField.set(validUser, UserStatus.DISABLED);
 
-        when(userRepository.findByEmail(validRequest.getEmail())).thenReturn(Optional.of(validUser));
-        when(passwordEncoder.matches(validRequest.getPassword(), validUser.getPasswordHash())).thenReturn(true);
+        when(userRepository.findByEmail(validRequest.email())).thenReturn(Optional.of(validUser));
+        when(passwordEncoder.matches(validRequest.password(), validUser.getPasswordHash())).thenReturn(true);
 
         // Act & Assert
         assertThatThrownBy(() -> loginUserUseCase.execute(validRequest, "Mozilla/5.0", "192.168.1.1"))
@@ -194,8 +194,8 @@ class LoginUserUseCaseTest {
                 .hasMessageContaining("Usuário inativo");
 
         // Verify
-        verify(userRepository).findByEmail(validRequest.getEmail());
-        verify(passwordEncoder).matches(validRequest.getPassword(), validUser.getPasswordHash());
+        verify(userRepository).findByEmail(validRequest.email());
+        verify(passwordEncoder).matches(validRequest.password(), validUser.getPasswordHash());
         verify(jwtService, never()).generateAccessToken(any());
         verify(refreshTokenRepository, never()).save(any());
     }
@@ -219,7 +219,7 @@ class LoginUserUseCaseTest {
         LoginResponse response = loginUserUseCase.execute(validRequest, "Mozilla/5.0", "192.168.1.1");
 
         // Assert
-        assertThat(response.getExpiresIn()).isEqualTo(900L); // 15 minutos = 900 segundos
+        assertThat(response.expiresIn()).isEqualTo(900L); // 15 minutos = 900 segundos
 
         ArgumentCaptor<RefreshToken> tokenCaptor = ArgumentCaptor.forClass(RefreshToken.class);
         verify(refreshTokenRepository).save(tokenCaptor.capture());
@@ -247,7 +247,7 @@ class LoginUserUseCaseTest {
         LoginResponse response = loginUserUseCase.execute(validRequest, "Mozilla/5.0", "192.168.1.1");
 
         // Assert - Deve ser possível converter para UUID
-        assertThatNoException().isThrownBy(() -> java.util.UUID.fromString(response.getRefreshToken()));
+        assertThatNoException().isThrownBy(() -> java.util.UUID.fromString(response.refreshToken()));
     }
 }
 

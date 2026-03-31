@@ -2,6 +2,7 @@ package br.com.shooping.list.application.usecase;
 
 import br.com.shooping.list.application.dto.shoppinglist.ItemResponse;
 import br.com.shooping.list.application.dto.shoppinglist.UpdateItemRequest;
+import br.com.shooping.list.application.mapper.ShoppingListMapper;
 import br.com.shooping.list.domain.shoppinglist.*;
 import br.com.shooping.list.infrastructure.exception.ShoppingListNotFoundException;
 import br.com.shooping.list.infrastructure.exception.UnauthorizedShoppingListAccessException;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateItemUseCase {
 
     private final ShoppingListRepository shoppingListRepository;
+    private final ShoppingListMapper mapper;
 
     /**
      * Atualiza um item de uma lista de compras.
@@ -55,7 +57,7 @@ public class UpdateItemUseCase {
 
         // Validar status se fornecido
         if (!request.isValidStatus()) {
-            log.warn("Status inválido fornecido: status={}", request.getStatus());
+            log.warn("Status inválido fornecido: status={}", request.status());
             throw new IllegalArgumentException("Status deve ser PENDING ou PURCHASED");
         }
 
@@ -74,29 +76,29 @@ public class UpdateItemUseCase {
         }
 
         // Aplicar atualizações condicionalmente
-        if (request.getName() != null && !request.getName().isBlank()) {
-            log.debug("Atualizando nome do item: itemId={}, novoNome={}", itemId, request.getName());
-            list.updateItemName(itemId, ItemName.of(request.getName()));
+        if (request.name() != null && !request.name().isBlank()) {
+            log.debug("Atualizando nome do item: itemId={}, novoNome={}", itemId, request.name());
+            list.updateItemName(itemId, ItemName.of(request.name()));
         }
 
-        if (request.getQuantity() != null) {
-            log.debug("Atualizando quantidade do item: itemId={}, novaQuantidade={}", itemId, request.getQuantity());
-            list.updateItemQuantity(itemId, Quantity.of(request.getQuantity()));
+        if (request.quantity() != null) {
+            log.debug("Atualizando quantidade do item: itemId={}, novaQuantidade={}", itemId, request.quantity());
+            list.updateItemQuantity(itemId, Quantity.of(request.quantity()));
         }
 
-        if (request.getUnit() != null) {
+        if (request.unit() != null) {
             log.debug("Atualizando unidade do item: itemId={}", itemId);
-            list.updateItemUnit(itemId, request.getUnit());
+            list.updateItemUnit(itemId, request.unit());
         }
 
-        if (request.getUnitPrice() != null) {
-            log.debug("Atualizando preço unitário do item: itemId={}, novoPreco={}", itemId, request.getUnitPrice());
-            list.updateItemUnitPrice(itemId, request.getUnitPrice());
+        if (request.unitPrice() != null) {
+            log.debug("Atualizando preço unitário do item: itemId={}, novoPreco={}", itemId, request.unitPrice());
+            list.updateItemUnitPrice(itemId, request.unitPrice());
         }
 
-        if (request.getStatus() != null) {
-            log.debug("Atualizando status do item: itemId={}, novoStatus={}", itemId, request.getStatus());
-            if ("PURCHASED".equals(request.getStatus())) {
+        if (request.status() != null) {
+            log.debug("Atualizando status do item: itemId={}, novoStatus={}", itemId, request.status());
+            if ("PURCHASED".equals(request.status())) {
                 list.markItemAsPurchased(itemId);
             } else {
                 list.markItemAsPending(itemId);
@@ -111,17 +113,8 @@ public class UpdateItemUseCase {
 
         log.info("Item atualizado com sucesso: listId={}, itemId={}", listId, itemId);
 
-        // Mapear para resposta
-        return ItemResponse.builder()
-                .id(updatedItem.getId())
-                .name(updatedItem.getName().getValue())
-                .quantity(updatedItem.getQuantity())
-                .unit(updatedItem.getUnit())
-                .unitPrice(updatedItem.getUnitPrice())
-                .status(updatedItem.getStatus().name())
-                .createdAt(updatedItem.getCreatedAt())
-                .updatedAt(updatedItem.getUpdatedAt())
-                .build();
+        // Mapear para resposta via MapStruct
+        return mapper.toItemResponse(updatedItem);
     }
 }
 

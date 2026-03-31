@@ -45,7 +45,7 @@ public class RefreshTokenUseCase {
         log.info("Tentativa de refresh token");
 
         // 1. Fazer hash do token recebido
-        String tokenHash = TokenHashUtil.hashToken(request.getRefreshToken());
+        String tokenHash = TokenHashUtil.hashToken(request.refreshToken());
 
         // 2. Buscar token no banco pelo hash
         var currentToken = refreshTokenRepository.findByTokenHash(tokenHash)
@@ -109,11 +109,11 @@ public class RefreshTokenUseCase {
         log.info("Refresh token rotacionado com sucesso para userId={}", user.getId());
 
         // 10. Retornar novos tokens
-        return RefreshTokenResponse.builder()
-                .accessToken(newAccessToken)
-                .refreshToken(newRefreshTokenValue)
-                .expiresIn(expiresIn)
-                .build();
+        return new RefreshTokenResponse(
+                newAccessToken,
+                newRefreshTokenValue,
+                expiresIn
+        );
     }
 }
 

@@ -462,11 +462,11 @@ public class GlobalExceptionHandler {
      * Mapeia FieldError para ValidationError.
      */
     private ErrorResponse.ValidationError mapFieldError(FieldError fieldError) {
-        return ErrorResponse.ValidationError.builder()
-                .field(fieldError.getField())
-                .message(fieldError.getDefaultMessage())
-                .rejectedValue(fieldError.getRejectedValue())
-                .build();
+        return new ErrorResponse.ValidationError(
+                fieldError.getField(),
+                fieldError.getDefaultMessage(),
+                fieldError.getRejectedValue()
+        );
     }
 }
 

@@ -86,11 +86,11 @@ public class GoogleLoginUseCase {
         log.info("Refresh token criado para userId={}, expiresAt={}", user.getId(), expiresAt);
         log.info("Login via Google realizado com sucesso para userId={}, email={}", user.getId(), user.getEmail());
 
-        return LoginResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshTokenValue)
-                .expiresIn(expiresIn)
-                .build();
+        return new LoginResponse(
+                accessToken,
+                refreshTokenValue,
+                expiresIn
+        );
     }
 
     /**

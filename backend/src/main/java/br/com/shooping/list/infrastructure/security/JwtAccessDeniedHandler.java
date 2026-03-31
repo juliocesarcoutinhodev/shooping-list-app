@@ -40,13 +40,15 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
                 method, requestUri, accessDeniedException.getMessage());
 
         // Cria resposta de erro padronizada
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .path(requestUri)
-                .error("Forbidden")
-                .message("Acesso negado. Você não possui permissões necessárias para acessar este recurso.")
-                .status(HttpServletResponse.SC_FORBIDDEN)
-                .timestamp(Instant.now())
-                .build();
+        ErrorResponse errorResponse = new ErrorResponse(
+                Instant.now(),
+                HttpServletResponse.SC_FORBIDDEN,
+                "Forbidden",
+                "Acesso negado. Você não possui permissões necessárias para acessar este recurso.",
+                requestUri,
+                null,
+                null
+        );
 
         // Configura resposta HTTP
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
