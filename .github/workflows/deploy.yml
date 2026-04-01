@@ -150,6 +150,7 @@ jobs:
               printf 'JWT_ISSUER=%s\n' "${JWT_ISSUER}"
               printf 'GOOGLE_CLIENT_ID=%s\n' "${GOOGLE_CLIENT_ID}"
               printf 'COOKIE_DOMAIN=%s\n' "${COOKIE_DOMAIN}"
+              printf 'REFRESH_COOKIE_PATH=/shopping-list-api/api/v1/auth\n'
             } > .env.production
             chmod 600 .env.production
 

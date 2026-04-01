@@ -38,7 +38,7 @@ app:
         name: refreshToken
         http-only: true
         secure: true # HTTPS obrigatório em produção
-        path: /api/v1/auth
+        path: ${REFRESH_COOKIE_PATH:/shopping-list-api/api/v1/auth}
         same-site: Strict # Máxima proteção CSRF em produção
         max-age: 604800 # 7 dias (mesmo do token)
         cookie-only: true # Apenas cookie (mais seguro, sem body)
