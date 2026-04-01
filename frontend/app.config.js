@@ -55,6 +55,9 @@ module.exports = {
       reactCompiler: true,
     },
     extra: {
+      eas: {
+        projectId: 'ecfad665-a35e-41e8-8980-2e8f63aadd2a',
+      },
       API_URL: process.env.API_URL || 'https://vps7348.integrator.host/shopping-list-api',
       API_TIMEOUT: process.env.API_TIMEOUT || '30000',
       APP_NAME: process.env.APP_NAME || 'Shopping List',
