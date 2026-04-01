@@ -31,11 +31,11 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$${MYSQL_ROOT_PASSWORD}\" mysqladmin ping -h 127.0.0.1 -uroot --silent"]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 30s
+      retries: 20
+      start_period: 60s
     networks:
       - app_internal
 
@@ -48,4 +48,3 @@ networks:
 
 volumes:
   mysql-data:
-
