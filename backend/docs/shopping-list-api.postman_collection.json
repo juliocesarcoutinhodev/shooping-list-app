@@ -1,0 +1,410 @@
+{
+  "info": {
+    "_postman_id": "4b4fb2b6-4d30-4ff3-9878-7d9642728ef4",
+    "name": "Shopping List API",
+    "description": "Collection para testar todos os endpoints da Shopping List API.\n\nUso rapido:\n- Producao via Caddy: base_url=https://vps7348.integrator.host e base_path=/shopping-list-api\n- Local sem proxy: base_url=http://localhost:8080 e base_path=\n- Faça login em Auth/Login para preencher automaticamente access_token.\n- Refresh/logout em producao usam cookie HttpOnly (sem refresh token no body).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://vps7348.integrator.host"
+    },
+    {
+      "key": "base_path",
+      "value": "/shopping-list-api"
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "list_id",
+      "value": "1"
+    },
+    {
+      "key": "item_id",
+      "value": "1"
+    },
+    {
+      "key": "user_email",
+      "value": "postman.user@example.com"
+    },
+    {
+      "key": "user_name",
+      "value": "Postman User"
+    },
+    {
+      "key": "user_password",
+      "value": "MySecureP@ssw0rd123"
+    },
+    {
+      "key": "google_id_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Public",
+      "item": [
+        {
+          "name": "Actuator Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}{{base_path}}/actuator/health",
+            "description": "Healthcheck publico da aplicacao."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"name\": \"{{user_name}}\",\n  \"password\": \"{{user_password}}\"\n}"
+            },
+            "url": "{{base_url}}{{base_path}}/api/v1/auth/register",
+            "description": "Cria um usuario LOCAL."
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "if (json.accessToken) {",
+                  "  pm.collectionVariables.set('access_token', json.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{user_email}}\",\n  \"password\": \"{{user_password}}\"\n}"
+            },
+            "url": "{{base_url}}{{base_path}}/api/v1/auth/login",
+            "description": "Login LOCAL. Salva o access_token na collection. O refresh token em producao e enviado apenas por cookie HttpOnly."
+          }
+        },
+        {
+          "name": "Google Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "if (json.accessToken) {",
+                  "  pm.collectionVariables.set('access_token', json.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"{{google_id_token}}\"\n}"
+            },
+            "url": "{{base_url}}{{base_path}}/api/v1/auth/google",
+            "description": "Login via Google OAuth2."
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "if (json.accessToken) {",
+                  "  pm.collectionVariables.set('access_token', json.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}{{base_path}}/api/v1/auth/refresh",
+            "description": "Renova o access token usando refresh token do cookie HttpOnly."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{base_url}}{{base_path}}/api/v1/auth/logout",
+            "description": "Faz logout e revoga o refresh token do cookie HttpOnly."
+          }
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{access_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}{{base_path}}/api/v1/users/me",
+            "description": "Retorna os dados do usuario autenticado."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shopping Lists",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{access_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Create List",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "if (json.id) {",
+                  "  pm.collectionVariables.set('list_id', String(json.id));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Compras do mes\",\n  \"description\": \"Supermercado\"\n}"
+            },
+            "url": "{{base_url}}{{base_path}}/api/v1/lists",
+            "description": "Cria uma nova lista de compras."
+          }
+        },
+        {
+          "name": "Get My Lists",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}{{base_path}}/api/v1/lists",
+            "description": "Lista todas as listas do usuario autenticado."
+          }
+        },
+        {
+          "name": "Get List By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}{{base_path}}/api/v1/lists/{{list_id}}",
+            "description": "Busca detalhes da lista pelo ID."
+          }
+        },
+        {
+          "name": "Update List",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Compras do mes (atualizada)\",\n  \"description\": \"Descricao atualizada\"\n}"
+            },
+            "url": "{{base_url}}{{base_path}}/api/v1/lists/{{list_id}}",
+            "description": "Atualiza parcialmente a lista."
+          }
+        },
+        {
+          "name": "Delete List",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}{{base_path}}/api/v1/lists/{{list_id}}",
+            "description": "Remove a lista (e itens) pelo ID."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shopping List Items",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{access_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Add Item To List",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "const json = pm.response.json();",
+                  "if (json.id) {",
+                  "  pm.collectionVariables.set('item_id', String(json.id));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Arroz\",\n  \"quantity\": 2.5,\n  \"unit\": \"kg\",\n  \"unitPrice\": 5.50\n}"
+            },
+            "url": "{{base_url}}{{base_path}}/api/v1/lists/{{list_id}}/items",
+            "description": "Adiciona um item na lista."
+          }
+        },
+        {
+          "name": "Update Item",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PURCHASED\",\n  \"quantity\": 3\n}"
+            },
+            "url": "{{base_url}}{{base_path}}/api/v1/lists/{{list_id}}/items/{{item_id}}",
+            "description": "Atualiza parcialmente um item da lista."
+          }
+        },
+        {
+          "name": "Delete Item",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}{{base_path}}/api/v1/lists/{{list_id}}/items/{{item_id}}",
+            "description": "Remove um item da lista."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{access_token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Admin Ping",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}{{base_path}}/api/v1/admin/ping",
+            "description": "Teste de autorizacao ADMIN (requer role ADMIN)."
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -10,7 +10,7 @@
     </parent>
     <groupId>br.com.shooping.list</groupId>
     <artifactId>shopping-list</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>backend</name>
     <description>backend</description>
     <properties>
