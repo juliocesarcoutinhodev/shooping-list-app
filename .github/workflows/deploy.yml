@@ -68,7 +68,6 @@ jobs:
           test -n "$MYSQL_PASSWORD" || (echo "Missing MYSQL_PASSWORD secret." && exit 1)
           test -n "$JWT_SECRET" || (echo "Missing JWT_SECRET secret." && exit 1)
           test -n "$JWT_ISSUER" || (echo "Missing JWT_ISSUER secret." && exit 1)
-          test -n "$GOOGLE_CLIENT_ID" || (echo "Missing GOOGLE_CLIENT_ID secret." && exit 1)
           test -n "$COOKIE_DOMAIN" || (echo "Missing COOKIE_DOMAIN secret." && exit 1)
           [ "$MYSQL_USER" != "root" ] || (echo "MYSQL_USER cannot be root (MySQL image constraint)." && exit 1)
 
