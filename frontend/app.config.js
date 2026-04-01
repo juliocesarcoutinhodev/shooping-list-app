@@ -55,7 +55,7 @@ module.exports = {
       reactCompiler: true,
     },
     extra: {
-      API_URL: process.env.API_URL || 'http://localhost:3000/api',
+      API_URL: process.env.API_URL || 'https://vps7348.integrator.host/shopping-list-api',
       API_TIMEOUT: process.env.API_TIMEOUT || '30000',
       APP_NAME: process.env.APP_NAME || 'Shopping List',
       APP_ENV: process.env.APP_ENV || 'development',

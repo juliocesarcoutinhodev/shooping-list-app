@@ -29,8 +29,12 @@ export interface RemoteDataSource {
 
   // Shopping Items
   createShoppingItem(listId: string, request: AddItemRequestDto): Promise<ShoppingItemDto>;
-  updateShoppingItem(id: string, request: UpdateItemRequestDto): Promise<ShoppingItemDto>;
-  deleteShoppingItem(id: string): Promise<void>;
+  updateShoppingItem(
+    listId: string,
+    itemId: string,
+    request: UpdateItemRequestDto
+  ): Promise<ShoppingItemDto>;
+  deleteShoppingItem(listId: string, itemId: string): Promise<void>;
 
   // User
   getUserProfile(): Promise<UserDto>;

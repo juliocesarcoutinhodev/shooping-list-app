@@ -24,11 +24,18 @@ export interface AuthStorageService {
 export class AuthAsyncStorage implements AuthStorageService {
   async saveSession(session: AuthSession): Promise<void> {
     try {
-      await Promise.all([
+      const writeOperations: Promise<void>[] = [
         AsyncStorage.setItem(KEYS.ACCESS_TOKEN, session.accessToken),
-        AsyncStorage.setItem(KEYS.REFRESH_TOKEN, session.refreshToken),
         AsyncStorage.setItem(KEYS.USER, JSON.stringify(session.user)),
-      ]);
+      ];
+
+      if (session.refreshToken) {
+        writeOperations.push(AsyncStorage.setItem(KEYS.REFRESH_TOKEN, session.refreshToken));
+      } else {
+        writeOperations.push(AsyncStorage.removeItem(KEYS.REFRESH_TOKEN));
+      }
+
+      await Promise.all(writeOperations);
     } catch (error) {
       console.error('Erro ao salvar sessão:', error);
       throw error;

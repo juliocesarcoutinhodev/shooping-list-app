@@ -73,17 +73,17 @@ export class AuthRepositoryImpl implements AuthRepository {
     };
   }
 
-  async logout(refreshToken: string): Promise<void> {
+  async logout(): Promise<void> {
     try {
-      await this.dataSource.logout({ refreshToken });
+      await this.dataSource.logout({});
     } finally {
       // Remove token mesmo se a requisição falhar
       getApiClient().removeAuthToken();
     }
   }
 
-  async refreshToken(refreshToken: string): Promise<AuthSession> {
-    const response = await this.dataSource.refreshToken({ refreshToken });
+  async refreshToken(): Promise<AuthSession> {
+    const response = await this.dataSource.refreshToken({});
 
     // Atualizo token no apiClient
     getApiClient().setAuthToken(response.accessToken);

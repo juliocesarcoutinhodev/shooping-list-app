@@ -34,14 +34,10 @@ export class AuthService {
   }
 
   async logout(): Promise<void> {
-    const refreshToken = await this.storage.getRefreshToken();
-
-    if (refreshToken) {
-      try {
-        await this.repository.logout(refreshToken);
-      } catch (_error) {
-        // Ignoro erro ao fazer logout no backend
-      }
+    try {
+      await this.repository.logout();
+    } catch (_error) {
+      // Ignoro erro ao fazer logout no backend
     }
 
     await this.storage.clearSession();
@@ -67,19 +63,12 @@ export class AuthService {
       console.log('[AuthService] Validando access token existente');
       return await this.repository.getCurrentUser();
     } catch (_error) {
-      // Access token inválido ou expirado, vou tentar renovar usando refresh token
+      // Access token inválido ou expirado, vou tentar renovar usando cookie HttpOnly
       console.log('[AuthService] Access token inválido, tentando refresh');
-      const refreshToken = await this.storage.getRefreshToken();
-
-      if (!refreshToken) {
-        console.log('[AuthService] Nenhum refresh token disponível, limpando sessão');
-        await this.storage.clearSession();
-        return null;
-      }
 
       try {
-        // Tento renovar a sessão usando o refresh token
-        const newSession = await this.repository.refreshToken(refreshToken);
+        // Tento renovar a sessão usando cookie HttpOnly
+        const newSession = await this.repository.refreshToken();
         await this.storage.saveSession(newSession);
         console.log('[AuthService] Sessão renovada com sucesso via refresh token');
         return newSession.user;
@@ -93,14 +82,8 @@ export class AuthService {
   }
 
   async refreshToken(): Promise<AuthSession | null> {
-    const refreshToken = await this.storage.getRefreshToken();
-
-    if (!refreshToken) {
-      return null;
-    }
-
     try {
-      const session = await this.repository.refreshToken(refreshToken);
+      const session = await this.repository.refreshToken();
       await this.storage.saveSession(session);
       return session;
     } catch (_error) {

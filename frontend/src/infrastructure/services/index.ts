@@ -22,50 +22,59 @@ export * from './google-auth-service';
 export * from './user-service';
 export * from './user-service-instance';
 
+const API_V1_PREFIX = '/api/v1';
+
 export class ApiRemoteDataSource implements RemoteDataSource {
   constructor(private httpClient: HttpClient) {}
 
   async getShoppingLists(): Promise<ShoppingListDto[]> {
-    return this.httpClient.get<ShoppingListDto[]>('/shopping-lists');
+    return this.httpClient.get<ShoppingListDto[]>(`${API_V1_PREFIX}/lists`);
   }
 
   async getShoppingList(id: string): Promise<ShoppingListDto> {
-    return this.httpClient.get<ShoppingListDto>(`/shopping-lists/${id}`);
+    return this.httpClient.get<ShoppingListDto>(`${API_V1_PREFIX}/lists/${id}`);
   }
 
   async createShoppingList(request: CreateShoppingListRequest): Promise<ShoppingListDto> {
-    return this.httpClient.post<ShoppingListDto>('/shopping-lists', request);
+    return this.httpClient.post<ShoppingListDto>(`${API_V1_PREFIX}/lists`, request);
   }
 
   async updateShoppingList(
     id: string,
     request: Partial<CreateShoppingListRequest>
   ): Promise<ShoppingListDto> {
-    return this.httpClient.put<ShoppingListDto>(`/shopping-lists/${id}`, request);
+    return this.httpClient.patch<ShoppingListDto>(`${API_V1_PREFIX}/lists/${id}`, request);
   }
 
   async deleteShoppingList(id: string): Promise<void> {
-    await this.httpClient.delete(`/shopping-lists/${id}`);
+    await this.httpClient.delete(`${API_V1_PREFIX}/lists/${id}`);
   }
 
   async createShoppingItem(listId: string, request: AddItemRequestDto): Promise<ShoppingItemDto> {
-    return this.httpClient.post<ShoppingItemDto>(`/shopping-lists/${listId}/items`, request);
+    return this.httpClient.post<ShoppingItemDto>(`${API_V1_PREFIX}/lists/${listId}/items`, request);
   }
 
-  async updateShoppingItem(id: string, request: UpdateItemRequestDto): Promise<ShoppingItemDto> {
-    return this.httpClient.put<ShoppingItemDto>(`/shopping-items/${id}`, request);
+  async updateShoppingItem(
+    listId: string,
+    itemId: string,
+    request: UpdateItemRequestDto
+  ): Promise<ShoppingItemDto> {
+    return this.httpClient.patch<ShoppingItemDto>(
+      `${API_V1_PREFIX}/lists/${listId}/items/${itemId}`,
+      request
+    );
   }
 
-  async deleteShoppingItem(id: string): Promise<void> {
-    await this.httpClient.delete(`/shopping-items/${id}`);
+  async deleteShoppingItem(listId: string, itemId: string): Promise<void> {
+    await this.httpClient.delete(`${API_V1_PREFIX}/lists/${listId}/items/${itemId}`);
   }
 
   async getUserProfile(): Promise<UserDto> {
-    return this.httpClient.get<UserDto>('/user/profile');
+    return this.httpClient.get<UserDto>(`${API_V1_PREFIX}/users/me`);
   }
 
   async updateUserProfile(request: Partial<UserDto>): Promise<UserDto> {
-    return this.httpClient.put<UserDto>('/user/profile', request);
+    return this.httpClient.patch<UserDto>(`${API_V1_PREFIX}/users/me`, request);
   }
 }
 

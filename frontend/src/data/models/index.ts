@@ -19,7 +19,7 @@ export interface RegisterRequestDto {
 
 export interface LoginResponseDto {
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string;
   expiresIn: number;
 }
 
@@ -33,17 +33,17 @@ export interface RegisterResponseDto {
 }
 
 export interface RefreshTokenRequestDto {
-  refreshToken: string;
+  refreshToken?: string;
 }
 
 export interface RefreshTokenResponseDto {
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string;
   expiresIn: number;
 }
 
 export interface LogoutRequestDto {
-  refreshToken: string;
+  refreshToken?: string;
 }
 
 export interface GoogleLoginRequestDto {
@@ -52,7 +52,7 @@ export interface GoogleLoginRequestDto {
 
 export interface GoogleLoginResponseDto {
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string;
   expiresIn: number;
 }
 

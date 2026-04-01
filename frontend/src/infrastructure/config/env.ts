@@ -40,7 +40,7 @@ function getNumberEnvVar(key: string, defaultValue: number): number {
 }
 
 export const env: EnvConfig = {
-  apiUrl: getEnvVar('API_URL', 'http://localhost:8080/api/v1'),
+  apiUrl: getEnvVar('API_URL', 'https://vps7348.integrator.host/shopping-list-api'),
   apiTimeout: getNumberEnvVar('API_TIMEOUT', 30000),
   appName: getEnvVar('APP_NAME', 'Shopping List'),
   appEnv: getEnvVar('APP_ENV', 'development') as EnvConfig['appEnv'],

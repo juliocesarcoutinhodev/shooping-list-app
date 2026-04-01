@@ -15,10 +15,12 @@ export interface CreateListDto {
   description?: string;
 }
 
+const API_V1_PREFIX = '/api/v1';
+
 export class ShoppingListRemoteDataSource {
   async getMyLists(): Promise<ShoppingListDto[]> {
     try {
-      return await apiClient.get<ShoppingListDto[]>('/lists');
+      return await apiClient.get<ShoppingListDto[]>(`${API_V1_PREFIX}/lists`);
     } catch (error) {
       // Normalização de erro conforme padrão do projeto
       if (error && typeof error === 'object' && 'response' in error) {
@@ -46,7 +48,7 @@ export class ShoppingListRemoteDataSource {
    */
   async getListById(listId: string): Promise<ShoppingListDto> {
     try {
-      return await apiClient.get<ShoppingListDto>(`/lists/${listId}`);
+      return await apiClient.get<ShoppingListDto>(`${API_V1_PREFIX}/lists/${listId}`);
     } catch (error) {
       // Repasso erro já normalizado pelo apiClient
       throw error;
@@ -55,7 +57,7 @@ export class ShoppingListRemoteDataSource {
 
   async createList(data: CreateListDto): Promise<ShoppingListDto> {
     try {
-      return await apiClient.post<ShoppingListDto>('/lists', data);
+      return await apiClient.post<ShoppingListDto>(`${API_V1_PREFIX}/lists`, data);
     } catch (error) {
       // Repasso erro já normalizado pelo apiClient
       throw error;
@@ -64,7 +66,7 @@ export class ShoppingListRemoteDataSource {
 
   async deleteList(listId: string): Promise<void> {
     try {
-      await apiClient.delete(`/lists/${listId}`);
+      await apiClient.delete(`${API_V1_PREFIX}/lists/${listId}`);
     } catch (error) {
       // Repasso erro já normalizado pelo apiClient
       throw error;
@@ -77,7 +79,7 @@ export class ShoppingListRemoteDataSource {
    */
   async addItem(listId: string, data: AddItemRequestDto): Promise<ShoppingItemDto> {
     try {
-      return await apiClient.post<ShoppingItemDto>(`/lists/${listId}/items`, data);
+      return await apiClient.post<ShoppingItemDto>(`${API_V1_PREFIX}/lists/${listId}/items`, data);
     } catch (error) {
       // Repasso erro já normalizado pelo apiClient
       throw error;
@@ -94,7 +96,10 @@ export class ShoppingListRemoteDataSource {
     data: UpdateItemRequestDto
   ): Promise<ShoppingItemDto> {
     try {
-      return await apiClient.patch<ShoppingItemDto>(`/lists/${listId}/items/${itemId}`, data);
+      return await apiClient.patch<ShoppingItemDto>(
+        `${API_V1_PREFIX}/lists/${listId}/items/${itemId}`,
+        data
+      );
     } catch (error) {
       // Repasso erro já normalizado pelo apiClient
       throw error;
@@ -107,7 +112,7 @@ export class ShoppingListRemoteDataSource {
    */
   async deleteItem(listId: string, itemId: string): Promise<void> {
     try {
-      await apiClient.delete(`/lists/${listId}/items/${itemId}`);
+      await apiClient.delete(`${API_V1_PREFIX}/lists/${listId}/items/${itemId}`);
     } catch (error) {
       // Repasso erro já normalizado pelo apiClient
       throw error;

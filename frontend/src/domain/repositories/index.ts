@@ -11,8 +11,8 @@ export interface AuthRepository {
   login(email: string, password: string): Promise<AuthSession>;
   register(name: string, email: string, password: string): Promise<AuthSession>;
   loginWithGoogle(idToken: string): Promise<AuthSession>;
-  logout(refreshToken: string): Promise<void>;
-  refreshToken(refreshToken: string): Promise<AuthSession>;
+  logout(): Promise<void>;
+  refreshToken(): Promise<AuthSession>;
   getCurrentUser(): Promise<User>;
 }
 

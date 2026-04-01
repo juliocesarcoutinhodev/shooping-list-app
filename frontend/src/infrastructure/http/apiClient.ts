@@ -44,6 +44,7 @@ export class ApiHttpClient implements HttpClient {
     this.axiosInstance = axios.create({
       baseURL,
       timeout,
+      withCredentials: true,
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
