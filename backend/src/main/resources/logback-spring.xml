@@ -20,13 +20,13 @@
 
     <!-- File Appender (opcional, para ambientes de produção) -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/shopping-list.log</file>
+        <file>/app/logs/shopping-list.log</file>
         <encoder>
             <pattern>${FILE_LOG_PATTERN}</pattern>
             <charset>UTF-8</charset>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>logs/shopping-list-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>/app/logs/shopping-list-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxFileSize>10MB</maxFileSize>
             <maxHistory>30</maxHistory>
             <totalSizeCap>1GB</totalSizeCap>
@@ -62,4 +62,3 @@
         <logger name="org.hibernate" level="WARN"/>
     </springProfile>
 </configuration>
-
